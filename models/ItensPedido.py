@@ -2,11 +2,11 @@ from models import ItensCardapio, Pedido
 
 
 class ItensPedidos():
-    def __init__(self, pedido:Pedido, item_cardapio:ItensCardapio, nome:str, preco:float, quantidade:int, observacao:str):
+    def __init__(self, pedido:Pedido, item_cardapio:ItensCardapio, quantidade:int, observacao:str):
         self.pedido = pedido
         self.item_cardapio = item_cardapio
-        self.nome = nome
-        self.preco = preco
+        self.nome = item_cardapio.nome
+        self.preco = item_cardapio.preco
         self.quantidade = quantidade
         self.observacao = observacao
 
