@@ -3,3 +3,4 @@ Este projeto consiste no desenvolvimento de um sistema de uma lanchonete, tendo 
 
 - Projetista: Tarcísio Luiz Harres de Almeida (tarcisiolh)
 - Banco/Desenvolvimento: Victor Antônio Galvan (VictorAGalvan)
+- Banco/Desenvolvimento: Rafael Albuquerque de Paula (Rafael-Dpaula)
