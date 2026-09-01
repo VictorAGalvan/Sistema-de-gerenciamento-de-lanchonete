@@ -1,5 +1,6 @@
 class ItensCardapio():
-    def __init__(self,nome:str,preco:float,categoria:str):
+    def __init__(self,id:int, nome:str,preco:float,categoria:str):
+        self.id = id
         self.nome = nome
         self.preco = preco
         self.categoria = categoria
