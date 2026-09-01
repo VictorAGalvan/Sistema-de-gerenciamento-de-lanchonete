@@ -1,8 +1,9 @@
 class Ingrediente():
-    def __init__(self,nome,unidade,quantidade):
-        self.nome = nome
-        self.unidade = unidade
-        self.quantidade = quantidade
+    def __init__(self,id:int,nome:str,unidade:str,quantidade:float):
+        self.__id = id
+        self.__nome = nome
+        self.__unidade = unidade
+        self.__quantidade = quantidade
     @property
     def nome(self): 
         return self.__nome
@@ -12,7 +13,16 @@ class Ingrediente():
     @property
     def quantidade(self):
         return self.__quantidade
+    @property
+    def id(self):
+        return self.__id
+    
 
+
+    @id.setter
+    def id(self, n_id):
+        self.__id = n_id
+    
     @nome.setter
     def nome(self, n_nome):
         self.__nome = n_nome
