@@ -3,7 +3,8 @@ from Cliente import Cliente
 
 
 class Pedido():
-    def __init__(self, itens_pedidos:list[ItensPedido], cliente:Cliente = None, mesa:int =None):
+    def __init__(self,id:int ,itens_pedidos:list[ItensPedido], cliente:Cliente = None, mesa:int =None):
+        self.id = id
         self.itens_pedidos = itens_pedidos
         self.cliente = cliente
         self.mesa = mesa
@@ -17,7 +18,14 @@ class Pedido():
     @property
     def mesa(self):
         return self.__mesa
-    
+    @property
+    def id(self):
+        return self.__id
+
+
+    @id.setter
+    def id(self, n_id):
+        self.__id = n_id
     @itens_pedidos.setter
     def itens_pedidos(self, n_itens_pedidos):
         self.__itens_pedidos = n_itens_pedidos
