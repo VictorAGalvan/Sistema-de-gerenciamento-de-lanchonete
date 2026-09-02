@@ -1,5 +1,5 @@
-from ItensPedido import ItensPedido
-from Cliente import Cliente
+from models.ItensPedido import ItensPedido
+from models.Cliente import Cliente
 
 
 class Pedido():
