@@ -1,6 +1,6 @@
 from datetime import date
 
-from ItensCardapio import ItensCardapio
+from models.ItensCardapio import ItensCardapio
 
 
 class Cardapio():
@@ -38,7 +38,7 @@ class Cardapio():
     def itens(self, n_itens):
         self.__itens = n_itens
 
-    def __eq__(self, other):
-        if isinstance(other, Cardapio):
-            return self.__id == other.__id
+    def __eq__(self, outro):
+        if isinstance(outro, Cardapio):
+            return self.__id == outro.__id
         return False
