@@ -1,4 +1,4 @@
-from models import Cardapio
+from models.Cardapio import Cardapio
 
 
 cardapio_mock:list[Cardapio] = []

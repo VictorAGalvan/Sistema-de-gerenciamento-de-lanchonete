@@ -1,9 +1,9 @@
-from ItensPedido import ItensPedido
-from Cliente import Cliente
+from models.Cliente import Cliente
+# from models.ItensPedido import ItensPedido
 
 
 class Pedido():
-    def __init__(self,id:int ,itens_pedidos:list[ItensPedido], cliente:Cliente = None, mesa:int =None):
+    def __init__(self,id:int ,itens_pedidos:list[object], cliente:Cliente = None, mesa:int =None):
         self.id = id
         self.itens_pedidos = itens_pedidos
         self.cliente = cliente
