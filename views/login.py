@@ -1,5 +1,5 @@
 import tkinter as tk
-from cardapio import Cardapio
+from views.cardapio_view import Cardapio
 # em outro arquivo, ex: main.py ou menu principal
 root = tk.Tk()
 # ... outros widgets do menu principal ...
