@@ -1,16 +1,21 @@
-class CardapioControler:
-    def __init__(self):
-        pass
+from dao.cardapio_dao import CardapioDAO
 
-    def listar_itens(self):
-        cardapio_mock = {
-            "data":"26/06/2026",
-            "versao":"1.0",
-            "itens" : [
-                {"nome":"X-Burguer", "preco": 10.0, "categoria":"Lanche"},
-                {"nome":"Coca-Cola", "preco": 5.0, "categoria":"Bebida"},
-                {"nome":"Batata Frita", "preco": 7.0, "categoria":"Acompanhamento"},
-                {"nome":"Sorvete", "preco": 4.0, "categoria":"Sobremesa"}
-            ]
-        }
-        return cardapio_mock
+class CardapioController:
+
+    def __init__(self):
+        self.dao = CardapioDAO()
+
+    def select_cardapio(self):
+        return self.dao.select()
+
+    def insert_cardapio(self, cardapio):
+        return self.dao.insert(cardapio)
+
+    def update_cardapio(self, cardapio):
+        return self.dao.update(cardapio)
+
+    def delete_cardapio(self, cardapio):
+        return self.dao.delete(cardapio)
+
+    def selectID_cardapio(self, id):
+        return self.dao.selectID(id)

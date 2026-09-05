@@ -6,7 +6,7 @@ sys.path.append(
         os.path.join(os.path.dirname(__file__), '..')
     )
 )
-from controler.cardapio_controler import CardapioControler
+from controler.cardapio_controler import CardapioController
 
 
 
@@ -16,7 +16,7 @@ class Cardapio(tk.Toplevel):
         super().__init__(master)
         self.title("Cardápio")
         self.geometry("400x300")
-        self.controler = CardapioControler()
+        self.controller = CardapioController()
         self.create_widgets()
 
     def adicionar_ao_pedido(self, item):
