@@ -1,9 +1,9 @@
 from models import ItensCardapio, Pedido
 
 
-class ItensPedidos(ItemCardapio):
+class ItensPedidos(ItensCardapio):
     def __init__(self, pedido:Pedido, item_cardapio:ItensCardapio, quantidade:int, observacao:str,nome:str, preco:float, categoria:str):
-        self.super().__init__(nome, preco, categoria)
+        super().__init__(nome, preco, categoria)
         self.pedido = pedido
         self.item_cardapio = item_cardapio
         self.quantidade = quantidade

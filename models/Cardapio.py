@@ -1,6 +1,6 @@
 from datetime import date
 
-from ItensCardapio import ItensCardapio
+from .ItensCardapio import ItensCardapio
 
 
 class Cardapio():
