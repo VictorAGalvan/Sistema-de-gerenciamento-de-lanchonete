@@ -5,6 +5,17 @@ from models.Pedido  import Pedido
 pedido_mock:list[Pedido] = []
 
 class PedidoDAO(GenericDAO):
+    def pegar_maior_id(self) -> int:
+            pk = 0
+            if not pedido_mock:
+                return pk
+            
+            for pedido in pedido_mock:
+                if pedido.id is None:
+                    raise ValueError("pedido ID não pode ser None")
+                if pedido.id > pk:
+                    pk = pedido.id
+            return pk
     def insert(self, pedido: Pedido) -> None:
         pedido_mock.append(pedido)
 

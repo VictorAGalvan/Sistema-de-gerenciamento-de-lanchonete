@@ -31,11 +31,12 @@ class Pedido():
         self.__itens_pedidos = n_itens_pedidos
     @cliente.setter
     def cliente(self, n_cliente):
-        if(self.mesa != None):
+        if n_cliente is not None and self.mesa is not None:
             raise Exception("Não é possível ter cliente e mesa ao mesmo tempo")
         self.__cliente = n_cliente
+
     @mesa.setter
     def mesa(self, n_mesa):
-        if(self.cliente != None):
+        if n_mesa is not None and self.cliente is not None:
             raise Exception("Não é possível ter cliente e mesa ao mesmo tempo")
         self.__mesa = n_mesa

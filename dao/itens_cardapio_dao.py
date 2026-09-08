@@ -2,9 +2,25 @@ from dao.generic_dao import GenericDAO
 from models.ItensCardapio import ItensCardapio
 
 
-itens_cardapio_mock:list[ItensCardapio] = []
+itens_cardapio_mock: list[ItensCardapio] = [
+        ItensCardapio(id=1, nome="X-Burguer", preco=10.0, categoria="Lanche", igredientes=[]),
+        ItensCardapio(id=2, nome="Coca-Cola", preco=5.0, categoria="Bebida", igredientes=[]),
+        ItensCardapio(id=3, nome="Batata Frita", preco=7.0, categoria="Acompanhamento", igredientes=[]),
+        ItensCardapio(id=4, nome="Sorvete", preco=4.0, categoria="Sobremesa", igredientes=[]),
+        ]
 
 class ItensCardapioDAO(GenericDAO):
+    def pegar_maior_id(self) -> int:
+            pk = 0
+            if not itens_cardapio_mock:
+                return pk
+            
+            for itens_cardapio in itens_cardapio_mock:
+                if itens_cardapio.id is None:
+                    raise ValueError("itens_cardapio ID não pode ser None")
+                if itens_cardapio.id > pk:
+                    pk = itens_cardapio.id
+            return pk
     def insert(self, itens_cardapio: ItensCardapio) -> None:
         itens_cardapio_mock.append(itens_cardapio)
 
