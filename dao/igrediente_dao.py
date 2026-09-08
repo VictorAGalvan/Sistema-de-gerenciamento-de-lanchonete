@@ -5,6 +5,17 @@ from models.Ingrediente import Ingrediente
 ingrediente_mock:list[Ingrediente] = []
 
 class IngredienteDAO(GenericDAO):
+    def pegar_maior_id(self) -> int:
+            pk = 0
+            if not ingrediente_mock:
+                return pk
+            
+            for ingrediente in ingrediente_mock:
+                if ingrediente.id is None:
+                    raise ValueError("igrediente ID não pode ser None")
+                if ingrediente.id > pk:
+                    pk = ingrediente.id
+            return pk
     def insert(self, ingrediente: Ingrediente) -> None:
         ingrediente_mock.append(ingrediente)
 

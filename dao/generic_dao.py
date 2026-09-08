@@ -3,6 +3,9 @@ from typing import Any, List, Optional
 
 class GenericDAO(ABC):
     @abstractmethod
+    def pegar_maior_id(self) -> int:
+        pass
+    @abstractmethod
     def insert(self, objeto: Any) -> Any:
         pass
 

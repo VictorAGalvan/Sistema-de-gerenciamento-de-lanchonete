@@ -4,6 +4,17 @@ from models.ItensPedido import ItensPedido
 itens_pedido_mock:list[ItensPedido] = []
 
 class ItensPedidoDAO(GenericDAO):
+    def pegar_maior_id(self) -> int:
+            pk = 0
+            if not itens_pedido_mock:
+                return pk
+            
+            for itens_pedido in itens_pedido_mock:
+                if itens_pedido.id is None:
+                    raise ValueError("itens_pedido ID não pode ser None")
+                if itens_pedido.id > pk:
+                    pk = itens_pedido.id
+            return pk
     def insert(self, itens_pedido: ItensPedido) -> None:
         itens_pedido_mock.append(itens_pedido)
 

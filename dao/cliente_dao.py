@@ -5,6 +5,17 @@ from models.Cliente import Cliente
 cliente_mock:list[Cliente] = []
 
 class ClienteDAO(GenericDAO):
+    def pegar_maior_id(self) -> int:
+        pk = 0
+        if not cliente_mock:
+            return pk
+        
+        for cliente in cliente_mock:
+            if cliente.id is None:
+                raise ValueError("Cliente ID não pode ser None")
+            if cliente.id > pk:
+                pk = cliente.id
+        return pk
     def insert(self, cliente: Cliente) -> None:
         cliente_mock.append(cliente)
 
