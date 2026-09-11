@@ -4,28 +4,56 @@ from database.conexao import engine
 from models.Cliente import Cliente
 
 class ClienteDAO:
-    
+
     def select(self):
-        sql = text("SELECT * FROM clientes")
+        sql = text("""
+            SELECT id, nome, cpf, telefone
+            FROM clientes
+        """)
         with engine.connect() as connection:
             resultado = connection.execute(sql)
             clientes = []
             for row in resultado:
-                clientes.append(Cliente(id=row.id, nome=row.nome))
+                clientes.append(
+                    Cliente(
+                        id=row.id,
+                        nome=row.nome,
+                        cpf=row.cpf,
+                        telefone=row.telefone,
+                    )
+                )
             return clientes
 
     def insert(self, cliente):
         with engine.begin() as connection:
             connection.execute(
-                text("INSERT INTO clientes (nome) VALUES (:nome)"),
-                {"nome": cliente.nome},
+                text("""
+                    INSERT INTO clientes (nome, cpf, telefone)
+                    VALUES (:nome, :cpf, :telefone)
+                """),
+                {
+                    "nome": cliente.nome,
+                    "cpf": cliente.cpf,
+                    "telefone": cliente.telefone,
+                },
             )
 
     def update(self, cliente):
         with engine.begin() as connection:
             connection.execute(
-                text("UPDATE clientes SET nome = :nome WHERE id = :id"),
-                {"nome": cliente.nome, "id": cliente.id},
+                text("""
+                    UPDATE clientes
+                    SET nome = :nome,
+                        cpf = :cpf,
+                        telefone = :telefone
+                    WHERE id = :id
+                """),
+                {
+                    "nome": cliente.nome,
+                    "cpf": cliente.cpf,
+                    "telefone": cliente.telefone,
+                    "id": cliente.id,
+                },
             )
 
     def delete(self, id_cliente):
@@ -36,11 +64,20 @@ class ClienteDAO:
             )
 
     def selectID(self, id_cliente):
-        sql = text("SELECT * FROM clientes WHERE id = :id")
+        sql = text("""
+            SELECT id, nome, cpf, telefone
+            FROM clientes
+            WHERE id = :id
+        """)
         with engine.connect() as connection:
             resultado = connection.execute(sql, {"id": id_cliente})
             row = resultado.fetchone()
             if row:
-                return Cliente(id=row.id, nome=row.nome)
+                return Cliente(
+                    id=row.id,
+                    nome=row.nome,
+                    cpf=row.cpf,
+                    telefone=row.telefone,
+                )
             else:
                 return None
