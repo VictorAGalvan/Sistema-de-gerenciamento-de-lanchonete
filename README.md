@@ -9,13 +9,7 @@ Este projeto consiste no desenvolvimento de um sistema de uma lanchonete, tendo 
 
 > UML
 
-![Diagrama UML](./DiagramaUML_lanchonete.jpg)
-
-# Diagrama de Classes
-
-> UML
-
-![Diagrama UML](./DiagramaUML_lanchonete.jpg)
+![Diagrama UML](./docs/DiagramaUML_lanchonete.jpg)
 
 # Modelo Lógico do Banco de Dados
 
