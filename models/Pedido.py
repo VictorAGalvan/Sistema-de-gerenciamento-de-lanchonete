@@ -1,6 +1,7 @@
+from models.EstadoPedido import Recebido
 from models.ItensPedido import ItensPedido
 from models.Cliente import Cliente
-
+from models.EstadoPedido import Recebido
 
 class Pedido():
     def __init__(self,id:int ,itens_pedidos:list[ItensPedido], cliente:Cliente = None, mesa:int =None):
@@ -8,7 +9,11 @@ class Pedido():
         self.itens_pedidos = itens_pedidos
         self.cliente = cliente
         self.mesa = mesa
+        self.estado = Recebido() 
 
+    @property
+    def estado(self):
+        return self.__estado
     @property
     def itens_pedidos(self):
         return self.__itens_pedidos
@@ -22,7 +27,9 @@ class Pedido():
     def id(self):
         return self.__id
 
-
+    @estado.setter
+    def estado(self, n_estado):
+        self.__estado = n_estado   
     @id.setter
     def id(self, n_id):
         self.__id = n_id

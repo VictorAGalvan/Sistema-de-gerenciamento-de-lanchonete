@@ -18,7 +18,8 @@ class PedidoDAO(GenericDAO):
             return pk
     def insert(self, pedido: Pedido) -> None:
         pedido_mock.append(pedido)
-
+    def select_nao_finalizados(self) -> list[Pedido]:
+        return [p for p in pedido_mock if not isinstance(p.estado, Pronto)]
     def select_por_id(self, pedido_id: int) -> Pedido | None:
         for pedido in pedido_mock:
             if pedido.id == pedido_id:
