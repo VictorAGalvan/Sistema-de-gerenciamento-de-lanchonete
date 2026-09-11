@@ -1,7 +1,7 @@
 from models.EstadoPedido import Recebido
 from models.ItensPedido import ItensPedido
 from models.Cliente import Cliente
-from models.EstadoPedido import Recebido
+
 
 class Pedido():
     def __init__(self,id:int ,itens_pedidos:list[ItensPedido], cliente:Cliente = None, mesa:int =None):
