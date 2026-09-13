@@ -8,7 +8,7 @@ class ItensPedido(ItensCardapio):
             item_cardapio.nome,
             item_cardapio.preco,
             item_cardapio.categoria,
-            list(item_cardapio.igredientes)
+            list(item_cardapio.ingredientes)
         )
         self.__quantidade = quantidade
         self.__observacao = observacao
