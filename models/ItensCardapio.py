@@ -1,10 +1,13 @@
+from models.Ingrediente import Ingrediente
+
+
 class ItensCardapio():
-    def __init__(self,id:int, nome:str,preco:float,categoria:str, igredientes:list[str]):
+    def __init__(self,id:int, nome:str,preco:float,categoria:str, ingredientes:list[Ingrediente]):
         self.__id = id
         self.__nome = nome
         self.__preco = preco
         self.__categoria = categoria
-        self.__igredientes = igredientes
+        self.__ingredientes = ingredientes
 
 
     @property
@@ -12,8 +15,8 @@ class ItensCardapio():
         return self.__id
 
     @property
-    def igredientes(self):
-        return self.__igredientes
+    def ingredientes(self):
+        return self.__ingredientes
     
     @property
     def nome(self):
@@ -31,9 +34,9 @@ class ItensCardapio():
     @id.setter
     def id(self, n_id):
         self.__id = n_id
-    @igredientes.setter
-    def igredientes(self, n_igredientes):
-        self.__igredientes = n_igredientes
+    @ingredientes.setter
+    def ingredientes(self, n_ingredientes):
+        self.__ingredientes = n_ingredientes
     @nome.setter
     def nome(self, n_nome):
         self.__nome = n_nome

@@ -1,10 +1,23 @@
 from dao.generic_dao import GenericDAO
+from models.EstadoPedido import Pronto
 from models.Pedido  import Pedido
 
 
 pedido_mock:list[Pedido] = []
 
 class PedidoDAO(GenericDAO):
+    def select_nao_finalizados(self) -> list[Pedido]:
+        pedidos_nao_finalizados = []
+        for pedido in pedido_mock:
+            if not isinstance(pedido.estado, Pronto):
+                pedidos_nao_finalizados.append(pedido)
+        return pedidos_nao_finalizados
+    def select_por_cliente(self, cliente_id: int) -> list[Pedido]:
+        pedidos_do_cliente = []
+        for pedido in pedido_mock:
+            if pedido.cliente is not None and pedido.cliente.id == cliente_id:
+                pedidos_do_cliente.append(pedido)
+        return pedidos_do_cliente
     def pegar_maior_id(self) -> int:
             pk = 0
             if not pedido_mock:

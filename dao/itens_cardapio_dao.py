@@ -1,12 +1,13 @@
 from dao.generic_dao import GenericDAO
+from models.Ingrediente import Ingrediente
 from models.ItensCardapio import ItensCardapio
 
 
 itens_cardapio_mock: list[ItensCardapio] = [
-        ItensCardapio(id=1, nome="X-Burguer", preco=10.0, categoria="Lanche", igredientes=[]),
-        ItensCardapio(id=2, nome="Coca-Cola", preco=5.0, categoria="Bebida", igredientes=[]),
-        ItensCardapio(id=3, nome="Batata Frita", preco=7.0, categoria="Acompanhamento", igredientes=[]),
-        ItensCardapio(id=4, nome="Sorvete", preco=4.0, categoria="Sobremesa", igredientes=[]),
+        ItensCardapio(id=1, nome="X-Burguer", preco=10.0, categoria="Lanche", ingredientes=[Ingrediente(id=1, nome="Pão", unidade="unidade", quantidade=1), Ingrediente(id=2, nome="Hambúrguer", unidade="unidade", quantidade=1), Ingrediente(id=3, nome="Queijo", unidade="fatia", quantidade=1)]),
+        ItensCardapio(id=2, nome="Coca-Cola", preco=5.0, categoria="Bebida", ingredientes=[]),
+        ItensCardapio(id=3, nome="Batata Frita", preco=7.0, categoria="Acompanhamento", ingredientes=[]),
+        ItensCardapio(id=4, nome="Sorvete", preco=4.0, categoria="Sobremesa", ingredientes=[]),
         ]
 
 class ItensCardapioDAO(GenericDAO):

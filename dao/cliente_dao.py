@@ -2,9 +2,16 @@ from dao.generic_dao import GenericDAO
 from models.Cliente import Cliente
 
 
-cliente_mock:list[Cliente] = []
+cliente_mock:list[Cliente] = [
+    Cliente(1, "Victor", "12345678900", "123456789", "senha123"),
+]
 
 class ClienteDAO(GenericDAO):
+    def selecionar_por_nome(self, nome: str) -> Cliente | None:
+        for cliente in cliente_mock:
+            if cliente.nome == nome:
+                return cliente
+        return None
     def pegar_maior_id(self) -> int:
         pk = 0
         if not cliente_mock:

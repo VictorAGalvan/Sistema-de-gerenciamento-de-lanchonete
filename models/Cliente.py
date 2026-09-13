@@ -1,10 +1,17 @@
 class Cliente():
-    def __init__(self, id:int, nome:str, cpf:str, telefone:str):
+    def __init__(self, id:int, nome:str, cpf:str, telefone:str,senha:str):
         self.__id = id
         self.__nome = nome
         self.__cpf = cpf
         self.__telefone = telefone
+        self.__senha = senha
 
+
+
+    @property
+    def senha(self):
+        return self.__senha
+    
     @property
     def nome(self):
         return self.__nome
@@ -30,3 +37,7 @@ class Cliente():
     @telefone.setter
     def telefone(self, n_telefone):
         self.__telefone = n_telefone
+
+    @senha.setter
+    def senha(self, n_senha):
+        self.__senha = n_senha
