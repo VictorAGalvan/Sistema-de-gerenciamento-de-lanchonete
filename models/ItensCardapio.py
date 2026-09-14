@@ -46,3 +46,11 @@ class ItensCardapio():
     @categoria.setter
     def categoria(self, n_categoria):
         self.__categoria = n_categoria
+
+    def __eq__(self, outro):
+        if isinstance(outro, ItensCardapio):
+            return self.__id == outro.__id
+        return False
+
+    def __hash__(self):
+        return hash(self.__id)

@@ -1,10 +1,9 @@
 import tkinter as tk
 from datetime import date, datetime
 
-from dao.cardapio_dao import CardapioDAO
-from dao.itens_cardapio_dao import ItensCardapioDAO
+from controler.cardapio_controler import CardapioControler
+from controler.itens_cardapio_controler import ItensCardapioControler
 from models.Cardapio import Cardapio
-from models.ItensCardapio import ItensCardapio
 
 
 class ListaCardapios(tk.Toplevel):
@@ -12,7 +11,7 @@ class ListaCardapios(tk.Toplevel):
         super().__init__(master)
         self.title("Cardápios")
         self.geometry("400x300")
-        self.dao_cardapio = CardapioDAO()
+        self.cardapio_controler = CardapioControler()
         self.create_widgets()
 
     def create_widgets(self):
@@ -28,9 +27,9 @@ class ListaCardapios(tk.Toplevel):
         for widget in self.frame_lista.winfo_children():
             widget.destroy()
 
-        ativo_id = self.dao_cardapio.get_ativo_id()
+        ativo_id = self.cardapio_controler.get_ativo_id()
 
-        for cardapio in self.dao_cardapio.select_todos():
+        for cardapio in self.cardapio_controler.listar_cardapios():
             linha = tk.Frame(self.frame_lista)
             linha.pack(pady=2, fill="x")
 
@@ -47,7 +46,7 @@ class ListaCardapios(tk.Toplevel):
             botao_ativo.pack(side="left", padx=2)
 
     def tornar_ativo(self, cardapio):
-        self.dao_cardapio.set_ativo(cardapio.id)
+        self.cardapio_controler.tornar_ativo(cardapio.id)
         self.desenhar_lista()
 
     def abrir_editar(self, cardapio):
@@ -60,20 +59,16 @@ class ListaCardapios(tk.Toplevel):
 class EditarCardapioWindow(tk.Toplevel):
     def __init__(self, cardapio: Cardapio = None, master=None, on_salvar=None):
         super().__init__(master)
-        self.dao_cardapio = CardapioDAO()
-        self.dao_itens = ItensCardapioDAO()
+        self.cardapio_controler = CardapioControler()
+        self.itens_cardapio_controler = ItensCardapioControler()
         self.on_salvar = on_salvar
-        self.cardapio = cardapio if cardapio is not None else Cardapio(id=0, data=date.today(), versao="", itens=[])
-        self.title("Editar Cardápio" if cardapio is not None else "Novo Cardápio")
+        self.cardapio = cardapio if cardapio is not None else Cardapio(id=None, data=date.today(), versao="", itens=[])
+        self.eh_novo = cardapio is None
+        self.title("Novo Cardápio" if self.eh_novo else "Editar Cardápio")
         self.geometry("400x500")
         self.create_widgets()
 
     def create_widgets(self):
-        tk.Label(self, text="ID do Cardápio:").pack(pady=5)
-        self.entry_id = tk.Entry(self)
-        self.entry_id.insert(0, str(self.cardapio.id))
-        self.entry_id.pack(pady=5)
-
         tk.Label(self, text="Data (dd/mm/aaaa):").pack(pady=5)
         self.entry_data = tk.Entry(self)
         self.entry_data.insert(0, self.cardapio.data.strftime("%d/%m/%Y"))
@@ -109,38 +104,29 @@ class EditarCardapioWindow(tk.Toplevel):
             tk.Button(linha, text="Remover", command=lambda i=item: self.remover_item(i)).pack(side="left", padx=2)
 
     def adicionar_item(self):
-        NovoItemWindow(self, master=self)
+        NovoItemWindow(self.cardapio, master=self, on_salvar=self.desenhar_itens)
 
     def editar_item(self, item_cardapio):
         EditItemWindow(item_cardapio, master=self, on_salvar=self.desenhar_itens)
 
     def remover_item(self, item_cardapio):
-        self.cardapio.itens.remove(item_cardapio)
-        self.dao_itens.delete(item_cardapio.id)
+        self.itens_cardapio_controler.remover_item_cardapio(item_cardapio)
         self.desenhar_itens()
 
     def salvar(self):
-        try:
-            novo_id = int(self.entry_id.get())
-        except ValueError:
-            self.label_erro.config(text="ID inválido.")
-            return
-
         try:
             nova_data = datetime.strptime(self.entry_data.get(), "%d/%m/%Y").date()
         except ValueError:
             self.label_erro.config(text="Data inválida. Use dd/mm/aaaa.")
             return
 
-        self.cardapio.id = novo_id
         self.cardapio.data = nova_data
         self.cardapio.versao = self.entry_versao.get()
 
-        existente = self.dao_cardapio.select_por_id(novo_id)
-        if existente is None:
-            self.dao_cardapio.insert(self.cardapio)
+        if self.eh_novo:
+            self.cardapio_controler.criar_cardapio(self.cardapio)
         else:
-            self.dao_cardapio.update(self.cardapio)
+            self.cardapio_controler.editar_cardapio(self.cardapio)
 
         if self.on_salvar:
             self.on_salvar()
@@ -148,12 +134,13 @@ class EditarCardapioWindow(tk.Toplevel):
 
 
 class NovoItemWindow(tk.Toplevel):
-    def __init__(self, cardapio_edit: EditarCardapioWindow, master=None):
+    def __init__(self, cardapio, master=None, on_salvar=None):
         super().__init__(master)
         self.title("Novo Item")
         self.geometry("300x250")
-        self.dao_itens = ItensCardapioDAO()
-        self.cardapio_edit = cardapio_edit
+        self.itens_cardapio_controler = ItensCardapioControler()
+        self.cardapio = cardapio
+        self.on_salvar = on_salvar
         self.create_widgets()
 
     def create_widgets(self):
@@ -181,16 +168,20 @@ class NovoItemWindow(tk.Toplevel):
             self.label_erro.config(text="Preço inválido.")
             return
 
+        from models.ItensCardapio import ItensCardapio
         novo_item = ItensCardapio(
-            id=self.dao_itens.pegar_maior_id() + 1,
+            id=None,
             nome=self.entry_nome.get(),
             preco=preco,
             categoria=self.entry_categoria.get(),
             ingredientes=[]
         )
-        self.dao_itens.insert(novo_item)
-        self.cardapio_edit.cardapio.itens.append(novo_item)
-        self.cardapio_edit.desenhar_itens()
+        self.itens_cardapio_controler.criar_item_cardapio(novo_item)
+        if novo_item not in self.cardapio.itens:
+            self.cardapio.itens.append(novo_item)
+
+        if self.on_salvar:
+            self.on_salvar()
         self.destroy()
 
 
@@ -199,7 +190,7 @@ class EditItemWindow(tk.Toplevel):
         super().__init__(master)
         self.title(f"Editar {item_cardapio.nome}")
         self.geometry("300x250")
-        self.dao_itens = ItensCardapioDAO()
+        self.itens_cardapio_controler = ItensCardapioControler()
         self.item_cardapio = item_cardapio
         self.on_salvar = on_salvar
         self.create_widgets()
@@ -236,7 +227,8 @@ class EditItemWindow(tk.Toplevel):
         self.item_cardapio.preco = novo_preco
         self.item_cardapio.categoria = self.entry_categoria.get()
 
-        self.dao_itens.update(self.item_cardapio)
+        self.itens_cardapio_controler.editar_item_cardapio(self.item_cardapio)
+
         if self.on_salvar:
             self.on_salvar()
         self.destroy()

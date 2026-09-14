@@ -1,51 +1,51 @@
-from dao.itens_cardapio_dao import ItensCardapioDAO
-from dao.itens_pedido_dao import ItensPedidoDAO
-from dao.pedido_dao import PedidoDAO
-from factory.PedidoFactory import PedidoFactory
-from models.Pedido import Pedido
-from models.ItensPedido import ItensPedido
 import tkinter as tk
+from controler.itens_cardapio_controler import ItensCardapioControler
+from controler.itens_pedido_controler import ItensPedidoControler
+from controler.pedido_controler import PedidoControler
+from factory.PedidoFactory import PedidoFactory
+from models.ItensPedido import ItensPedido
 
 
 class Cardapio(tk.Toplevel):
-    def __init__(self, master=None, cliente = None):
+    def __init__(self, master=None, cliente=None):
         super().__init__(master)
         self.title("Cardápio")
         self.geometry("400x300")
-        self.dao_itens = ItensCardapioDAO()
-        self.pedido = Pedido(id=0, itens_pedidos=[])
-        self.cliente =cliente
-        self.pedido_factory = PedidoFactory()
+        self.itens_cardapio_controler = ItensCardapioControler()
+        self.itens_pedido_controler = ItensPedidoControler()
+        self.pedido_controler = PedidoControler()
+        self.cliente = cliente
+        self.carrinho = []
         self.create_widgets()
 
-    def buscar_item_pedido(self, item_cardapio):
-        for ip in self.pedido.itens_pedidos:
+    def buscar_item_carrinho(self, item_cardapio):
+        for ip in self.carrinho:
             if ip.id == item_cardapio.id:
                 return ip
         return None
 
     def adicionar_ao_pedido(self, item_cardapio, label_contagem):
-        item_pedido = self.buscar_item_pedido(item_cardapio)
+        item_pedido = self.buscar_item_carrinho(item_cardapio)
         if item_pedido is None:
             item_pedido = ItensPedido(item_cardapio, quantidade=1)
-            self.pedido.itens_pedidos.append(item_pedido)
+            self.carrinho.append(item_pedido)
         else:
             item_pedido.quantidade += 1
         label_contagem.config(text=str(item_pedido.quantidade))
 
-    def remover_do_pedido(self, item_cardapio, label_contagem): 
-        item_pedido = self.buscar_item_pedido(item_cardapio)
+    def remover_do_pedido(self, item_cardapio, label_contagem):
+        item_pedido = self.buscar_item_carrinho(item_cardapio)
         if item_pedido and item_pedido.quantidade > 0:
             item_pedido.quantidade -= 1
             label_contagem.config(text=str(item_pedido.quantidade))
             if item_pedido.quantidade == 0:
-                self.pedido.itens_pedidos.remove(item_pedido)
+                self.carrinho.remove(item_pedido)
 
     def abrir_detalhes(self, item_cardapio, label_contagem):
-        item_pedido = self.buscar_item_pedido(item_cardapio)
+        item_pedido = self.buscar_item_carrinho(item_cardapio)
         if item_pedido is None:
             item_pedido = ItensPedido(item_cardapio, quantidade=1)
-            self.pedido.itens_pedidos.append(item_pedido)
+            self.carrinho.append(item_pedido)
             label_contagem.config(text=str(item_pedido.quantidade))
         ItensDetail(item_cardapio, item_pedido, master=self)
 
@@ -53,7 +53,7 @@ class Cardapio(tk.Toplevel):
         self.label = tk.Label(self, text="Bem-vindo ao Cardápio!")
         self.label.pack(pady=5)
 
-        for item in self.dao_itens.select_todos():
+        for item in self.itens_cardapio_controler.listar_itens_cardapio():
             linha = tk.Frame(self)
             linha.pack(pady=5, fill="x")
 
@@ -65,7 +65,8 @@ class Cardapio(tk.Toplevel):
             contagem.pack(side="left", padx=5)
             tk.Button(linha, text="-", command=lambda i=item, lbl=contagem: self.remover_do_pedido(i, lbl)).pack(side="left")
             tk.Button(linha, text="Info", command=lambda i=item, lbl=contagem: self.abrir_detalhes(i, lbl)).pack(side="left", padx=5)
-        if(self.cliente is None):
+
+        if self.cliente is None:
             self.label_mesa = tk.Label(self, text="Número da mesa:")
             self.label_mesa.pack(pady=5)
 
@@ -76,22 +77,18 @@ class Cardapio(tk.Toplevel):
         botao_fazer_pedido.pack(pady=10)
 
     def fazer_pedido(self):
-        if(self.cliente is None):
+        for item_pedido in self.carrinho:
+            self.itens_pedido_controler.criar_item_pedido(item_pedido)
+
+        if self.cliente is None:
             mesa = int(self.entry_mesa.get())
-
-        dao_pedido = PedidoDAO()
-        dao_itens_pedido = ItensPedidoDAO()
-
-        if(self.cliente is None):
-            novo_pedido = self.pedido_factory.criar_pedido_mesa(mesa, self.pedido.itens_pedidos)
+            novo_pedido = PedidoFactory.criar_pedido_mesa(mesa, self.carrinho)
         else:
-            novo_pedido = self.pedido_factory.criar_pedido_cliente(self.cliente, self.pedido.itens_pedidos)
-        dao_pedido.insert(novo_pedido)
+            novo_pedido = PedidoFactory.criar_pedido_cliente(self.cliente, self.carrinho)
 
-        for item_pedido in novo_pedido.itens_pedidos:
-            item_pedido.id = dao_itens_pedido.pegar_maior_id() + 1
-            dao_itens_pedido.insert(item_pedido)
+        self.pedido_controler.criar_pedido(novo_pedido)
         self.destroy()
+
 
 class ItensDetail(tk.Toplevel):
     def __init__(self, item_cardapio, item_pedido, master=None):
