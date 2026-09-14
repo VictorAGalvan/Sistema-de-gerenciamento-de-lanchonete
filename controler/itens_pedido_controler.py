@@ -1,7 +1,7 @@
 from dao.itens_pedido_dao import ItensPedidoDAO
 
-class ItensPedidoControler:
 
+class ItensPedidoControler:
     def __init__(self):
         self.dao = ItensPedidoDAO()
 
@@ -11,11 +11,17 @@ class ItensPedidoControler:
     def buscar_item_pedido(self, id_item):
         return self.dao.selectID(id_item)
 
-    def adicionar_item_pedido(self, item):
-        return self.dao.insert(item)
+    def criar_item_pedido(self, item):
+        self.dao.insert(item)
+        for ingrediente in item.ingredientes:
+            self.dao.insertIngrediente(item.id, ingrediente.id)
 
-    def atualizar_item_pedido(self, id_item, item):
-        return self.dao.update(id_item, item)
+    def editar_item_pedido(self, item):
+        self.dao.update(item)
+        self.dao.deleteIngredientes(item.id)
+        for ingrediente in item.ingredientes:
+            self.dao.insertIngrediente(item.id, ingrediente.id)
 
-    def remover_item_pedido(self, id_item):
-        return self.dao.delete(id_item)
+    def remover_item_pedido(self, item):
+        self.dao.deleteIngredientes(item.id)
+        self.dao.delete(item)

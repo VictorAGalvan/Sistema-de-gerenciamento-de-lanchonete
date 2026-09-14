@@ -32,3 +32,9 @@ class Ingrediente():
     @quantidade.setter
     def quantidade(self, n_quantidade):
         self.__quantidade = n_quantidade
+
+
+    def __str__(self):
+        return f"Ingrediente(id={self.id}, nome='{self.nome}', unidade='{self.unidade}', quantidade={self.quantidade})"
+    def __repr__(self):
+        return self.__str__()
