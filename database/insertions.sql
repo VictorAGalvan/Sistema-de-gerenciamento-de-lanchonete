@@ -88,7 +88,7 @@ BEGIN;
     (15, 'Combo X-Frango', 32.90, 'Combo');
     -- ============================================================
     -- 4. PEDIDOS
-    -- 30 pedidos
+    -- Estados: R=Recebido, N=Na Fila, E=Em Preparo, P=Pronto
     -- ============================================================
     INSERT  INTO pedidos (
         id,
@@ -96,146 +96,105 @@ BEGIN;
         mesa,
         estado
     )
-    VALUES              (1, 1, 1, 'F'),
-    (2, 2, 2, 'F'),
-    (3, 3, 3, 'F'),
-    (4, 4, 4, 'F'),
-    (5, 5, 5, 'P'),
-    (6, 6, 6, 'P'),
-    (7, 7, 7, 'A'),
-    (8, 8, 8, 'A'),
-    (9, 9, 9, 'F'),
-    (10, 10, 10, 'F'),
-    (11, 11, 1, 'P'),
-    (12, 12, 2, 'A'),
-    (13, 13, 3, 'F'),
-    (14, 14, 4, 'F'),
-    (15, 15, 5, 'P'),
-    (16, 16, 6, 'A'),
-    (17, 17, 7, 'F'),
-    (18, 18, 8, 'P'),
-    (19, 19, 9, 'A'),
-    (20, 20, 10, 'F'),
-    (21, 21, 1, 'F'),
-    (22, 22, 2, 'P'),
-    (23, 23, 3, 'A'),
-    (24, 24, 4, 'F'),
-    (25, 25, 5, 'P'),
-    (26, 1, 6, 'A'),
-    (27, 2, 7, 'F'),
-    (28, 3, 8, 'P'),
-    (29, 4, 9, 'A'),
-    (30, 5, 10, 'F');
+    VALUES              (1, 1, 1, 'N'),
+    (2, 2, 2, 'N'),
+    (3, 3, 3, 'N'),
+    (4, 4, 4, 'N'),
+    (5, 5, 5, 'E'),
+    (6, 6, 6, 'E'),
+    (7, 7, 7, 'P'),
+    (8, 8, 8, 'P'),
+    (9, 9, 9, 'N'),
+    (10, 10, 10, 'N'),
+    (11, 11, 1, 'E'),
+    (12, 12, 2, 'P'),
+    (13, 13, 3, 'N'),
+    (14, 14, 4, 'N'),
+    (15, 15, 5, 'E'),
+    (16, 16, 6, 'P'),
+    (17, 17, 7, 'N'),
+    (18, 18, 8, 'E'),
+    (19, 19, 9, 'P'),
+    (20, 20, 10, 'N'),
+    (21, 21, 1, 'N'),
+    (22, 22, 2, 'E'),
+    (23, 23, 3, 'P'),
+    (24, 24, 4, 'N'),
+    (25, 25, 5, 'E'),
+    (26, 1, 6, 'P'),
+    (27, 2, 7, 'N'),
+    (28, 3, 8, 'E'),
+    (29, 4, 9, 'P'),
+    (30, 5, 10, 'N');
     -- ============================================================
     -- 5. ITENS DOS PEDIDOS
-    -- 60 itens
-    --
-    -- Cada pedido possui pelo menos 1 item.
-    -- Vários pedidos possuem 2 ou 3 produtos.
+    -- 60 itens, com idpedido preenchido
     -- ============================================================
-    INSERT  INTO itensPedido (
-        id,
-        iditensCardapio,
-        quantidade,
-        observacao
-    )
-    VALUES                  -- Pedido 1
-    (1, 1, 2, 'Sem cebola'),
-    (2, 9, 1, NULL),
-    -- Pedido 2
-    (3, 3, 1, 'Adicionar queijo'),
-    (4, 11, 2, 'Sem gelo'),
-    -- Pedido 3
-    (5, 2, 1, 'Sem tomate'),
-    (6, 10, 1, NULL),
-    (7, 11, 1, NULL),
-    -- Pedido 4
-    (8, 5, 1, 'Carne bem passada'),
-    (9, 12, 1, NULL),
-    -- Pedido 5
-    (10, 6, 2, 'Adicionar catupiry'),
-    (11, 9, 1, NULL),
-    -- Pedido 6
-    (12, 7, 1, 'Sem cebola'),
-    (13, 11, 1, 'Sem gelo'),
-    -- Pedido 7
-    (14, 4, 1, 'Adicionar bacon'),
-    (15, 10, 1, NULL),
-    -- Pedido 8
-    (16, 8, 2, 'Pouco molho'),
-    (17, 11, 2, NULL),
-    -- Pedido 9
-    (18, 1, 1, NULL),
-    (19, 9, 2, NULL),
-    -- Pedido 10
-    (20, 13, 2, NULL),
-    (21, 12, 1, NULL),
-    -- Pedido 11
-    (22, 2, 1, 'Sem alface'),
-    (23, 11, 1, NULL),
-    -- Pedido 12
-    (24, 3, 2, 'Bem passado'),
-    (25, 10, 1, NULL),
-    -- Pedido 13
-    (26, 5, 1, 'Sem tomate e sem cebola'),
-    (27, 11, 1, 'Sem gelo'),
-    -- Pedido 14
-    (28, 6, 1, NULL),
-    (29, 9, 1, NULL),
-    (30, 11, 1, NULL),
-    -- Pedido 15
-    (31, 14, 2, NULL),
-    -- Pedido 16
-    (32, 8, 1, 'Sem milho'),
-    (33, 12, 1, NULL),
-    -- Pedido 17
-    (34, 1, 2, NULL),
-    (35, 10, 1, NULL),
-    -- Pedido 18
-    (36, 7, 1, 'Pouco molho'),
-    (37, 11, 1, NULL),
-    -- Pedido 19
-    (38, 4, 1, 'Sem bacon'),
-    (39, 9, 1, NULL),
-    -- Pedido 20
-    (40, 15, 1, NULL),
-    (41, 11, 1, NULL),
-    -- Pedido 21
-    (42, 2, 2, 'Sem cebola'),
-    (43, 10, 1, NULL),
-    -- Pedido 22
-    (44, 3, 1, 'Adicionar ovo'),
-    (45, 12, 1, NULL),
-    -- Pedido 23
-    (46, 5, 1, 'Carne ao ponto'),
-    (47, 9, 1, NULL),
-    (48, 11, 1, NULL),
-    -- Pedido 24
-    (49, 13, 1, NULL),
-    (50, 11, 1, NULL),
-    -- Pedido 25
-    (51, 6, 2, 'Sem tomate'),
-    (52, 10, 1, NULL),
-    -- Pedido 26
-    (53, 8, 1, NULL),
-    (54, 11, 1, 'Sem gelo'),
-    -- Pedido 27
-    (55, 1, 1, 'Adicionar queijo'),
-    (56, 9, 1, NULL),
-    -- Pedido 28
-    (57, 14, 1, NULL),
-    (58, 12, 1, NULL),
-    -- Pedido 29
-    (59, 7, 2, 'Sem cebola'),
-    -- Pedido 30
-    (60, 15, 1, 'Adicionar catupiry');
+    INSERT INTO itensPedido (id, idpedido, iditensCardapio, quantidade, observacao) VALUES
+    (1, 1, 1, 2, 'Sem cebola'),
+    (2, 1, 9, 1, NULL),
+    (3, 2, 3, 1, 'Adicionar queijo'),
+    (4, 2, 11, 2, 'Sem gelo'),
+    (5, 3, 2, 1, 'Sem tomate'),
+    (6, 3, 10, 1, NULL),
+    (7, 3, 11, 1, NULL),
+    (8, 4, 5, 1, 'Carne bem passada'),
+    (9, 4, 12, 1, NULL),
+    (10, 5, 6, 2, 'Adicionar catupiry'),
+    (11, 5, 9, 1, NULL),
+    (12, 6, 7, 1, 'Sem cebola'),
+    (13, 6, 11, 1, 'Sem gelo'),
+    (14, 7, 4, 1, 'Adicionar bacon'),
+    (15, 7, 10, 1, NULL),
+    (16, 8, 8, 2, 'Pouco molho'),
+    (17, 8, 11, 2, NULL),
+    (18, 9, 1, 1, NULL),
+    (19, 9, 9, 2, NULL),
+    (20, 10, 13, 2, NULL),
+    (21, 10, 12, 1, NULL),
+    (22, 11, 2, 1, 'Sem alface'),
+    (23, 11, 11, 1, NULL),
+    (24, 12, 3, 2, 'Bem passado'),
+    (25, 12, 10, 1, NULL),
+    (26, 13, 5, 1, 'Sem tomate e sem cebola'),
+    (27, 13, 11, 1, 'Sem gelo'),
+    (28, 14, 6, 1, NULL),
+    (29, 14, 9, 1, NULL),
+    (30, 14, 11, 1, NULL),
+    (31, 15, 14, 2, NULL),
+    (32, 16, 8, 1, 'Sem milho'),
+    (33, 16, 12, 1, NULL),
+    (34, 17, 1, 2, NULL),
+    (35, 17, 10, 1, NULL),
+    (36, 18, 7, 1, 'Pouco molho'),
+    (37, 18, 11, 1, NULL),
+    (38, 19, 4, 1, 'Sem bacon'),
+    (39, 19, 9, 1, NULL),
+    (40, 20, 15, 1, NULL),
+    (41, 20, 11, 1, NULL),
+    (42, 21, 2, 2, 'Sem cebola'),
+    (43, 21, 10, 1, NULL),
+    (44, 22, 3, 1, 'Adicionar ovo'),
+    (45, 22, 12, 1, NULL),
+    (46, 23, 5, 1, 'Carne ao ponto'),
+    (47, 23, 9, 1, NULL),
+    (48, 23, 11, 1, NULL),
+    (49, 24, 13, 1, NULL),
+    (50, 24, 11, 1, NULL),
+    (51, 25, 6, 2, 'Sem tomate'),
+    (52, 25, 10, 1, NULL),
+    (53, 26, 8, 1, NULL),
+    (54, 26, 11, 1, 'Sem gelo'),
+    (55, 27, 1, 1, 'Adicionar queijo'),
+    (56, 27, 9, 1, NULL),
+    (57, 28, 14, 1, NULL),
+    (58, 28, 12, 1, NULL),
+    (59, 29, 7, 2, 'Sem cebola'),
+    (60, 30, 15, 1, 'Adicionar catupiry');
     -- ============================================================
     -- 6. CARDÁPIOS
     -- 3 versões
     -- ============================================================
-    -- ------------------------------------------------------------
-    -- Versão 1.0 — Julho
-    -- ------------------------------------------------------------
     INSERT  INTO cardapios (
         id,
         iditensCardapio,
@@ -250,9 +209,6 @@ BEGIN;
     (6, 6, '2026-07-01', '1.0'),
     (7, 7, '2026-07-01', '1.0'),
     (8, 8, '2026-07-01', '1.0');
-    -- ------------------------------------------------------------
-    -- Versão 2.0 — Agosto
-    -- ------------------------------------------------------------
     INSERT  INTO cardapios (
         id,
         iditensCardapio,
@@ -271,9 +227,6 @@ BEGIN;
     (18, 10, '2026-08-01', '2.0'),
     (19, 11, '2026-08-01', '2.0'),
     (20, 12, '2026-08-01', '2.0');
-    -- ------------------------------------------------------------
-    -- Versão 3.0 — Setembro
-    -- ------------------------------------------------------------
     INSERT  INTO cardapios (
         id,
         iditensCardapio,
@@ -298,178 +251,32 @@ BEGIN;
     -- ============================================================
     -- 7. RELAÇÃO ITEM CARDÁPIO × INGREDIENTES
     -- ============================================================
-    -- X-Burger
-    INSERT  INTO itemIngredienteCardapio (
-        id,
-        iditensCardapio,
-        idingredientes
-    )
-    VALUES                              (1, 1, 1),
-    (2, 1, 2),
-    (3, 1, 3),
-    (4, 1, 11);
-    -- X-Salada
-    INSERT  INTO itemIngredienteCardapio (
-        id,
-        iditensCardapio,
-        idingredientes
-    )
-    VALUES                              (5, 2, 1),
-    (6, 2, 2),
-    (7, 2, 3),
-    (8, 2, 5),
-    (9, 2, 6),
-    (10, 2, 11);
-    -- X-Bacon
-    INSERT  INTO itemIngredienteCardapio (
-        id,
-        iditensCardapio,
-        idingredientes
-    )
-    VALUES                              (11, 3, 1),
-    (12, 3, 2),
-    (13, 3, 3),
-    (14, 3, 7),
-    (15, 3, 11);
-    -- X-Egg
-    INSERT  INTO itemIngredienteCardapio (
-        id,
-        iditensCardapio,
-        idingredientes
-    )
-    VALUES                              (16, 4, 1),
-    (17, 4, 2),
-    (18, 4, 3),
-    (19, 4, 8),
-    (20, 4, 11);
-    -- X-Tudo
-    INSERT  INTO itemIngredienteCardapio (
-        id,
-        iditensCardapio,
-        idingredientes
-    )
-    VALUES                              (21, 5, 1),
-    (22, 5, 2),
-    (23, 5, 3),
-    (24, 5, 4),
-    (25, 5, 5),
-    (26, 5, 6),
-    (27, 5, 7),
-    (28, 5, 8),
-    (29, 5, 12);
-    -- X-Frango
-    INSERT  INTO itemIngredienteCardapio (
-        id,
-        iditensCardapio,
-        idingredientes
-    )
-    VALUES                              (30, 6, 1),
-    (31, 6, 13),
-    (32, 6, 3),
-    (33, 6, 5),
-    (34, 6, 6),
-    (35, 6, 14);
-    -- X-Calabresa
-    INSERT  INTO itemIngredienteCardapio (
-        id,
-        iditensCardapio,
-        idingredientes
-    )
-    VALUES                              (36, 7, 1),
-    (37, 7, 15),
-    (38, 7, 3),
-    (39, 7, 12),
-    (40, 7, 11);
-    -- Hot Dog Especial
-    INSERT  INTO itemIngredienteCardapio (
-        id,
-        iditensCardapio,
-        idingredientes
-    )
-    VALUES                              (41, 8, 16),
-    (42, 8, 17),
-    (43, 8, 18),
-    (44, 8, 19),
-    (45, 8, 11);
-    -- Batata Frita P
-    INSERT  INTO itemIngredienteCardapio (
-        id,
-        iditensCardapio,
-        idingredientes
-    )
-    VALUES                              (46, 9, 9);
-    -- Batata Frita G
-    INSERT  INTO itemIngredienteCardapio (
-        id,
-        iditensCardapio,
-        idingredientes
-    )
-    VALUES                              (47, 10, 9);
-    -- Refrigerante Lata
-    INSERT  INTO itemIngredienteCardapio (
-        id,
-        iditensCardapio,
-        idingredientes
-    )
-    VALUES                              (48, 11, 10);
-    -- Água Mineral
-    INSERT  INTO itemIngredienteCardapio (
-        id,
-        iditensCardapio,
-        idingredientes
-    )
-    VALUES                              (49, 12, 20);
-    -- Combo X-Burger
-    INSERT  INTO itemIngredienteCardapio (
-        id,
-        iditensCardapio,
-        idingredientes
-    )
-    VALUES                              (50, 13, 1),
-    (51, 13, 2),
-    (52, 13, 3),
-    (53, 13, 9),
-    (54, 13, 10);
-    -- Combo X-Bacon
-    INSERT  INTO itemIngredienteCardapio (
-        id,
-        iditensCardapio,
-        idingredientes
-    )
-    VALUES                              (55, 14, 1),
-    (56, 14, 2),
-    (57, 14, 3),
-    (58, 14, 7),
-    (59, 14, 9),
-    (60, 14, 10);
-    -- Combo X-Frango
-    INSERT  INTO itemIngredienteCardapio (
-        id,
-        iditensCardapio,
-        idingredientes
-    )
-    VALUES                              (61, 15, 1),
-    (62, 15, 13),
-    (63, 15, 3),
-    (64, 15, 9),
-    (65, 15, 10);
+    INSERT  INTO itemIngredienteCardapio (id, iditensCardapio, idingredientes)
+    VALUES (1, 1, 1), (2, 1, 2), (3, 1, 3), (4, 1, 11),
+    (5, 2, 1), (6, 2, 2), (7, 2, 3), (8, 2, 5), (9, 2, 6), (10, 2, 11),
+    (11, 3, 1), (12, 3, 2), (13, 3, 3), (14, 3, 7), (15, 3, 11),
+    (16, 4, 1), (17, 4, 2), (18, 4, 3), (19, 4, 8), (20, 4, 11),
+    (21, 5, 1), (22, 5, 2), (23, 5, 3), (24, 5, 4), (25, 5, 5), (26, 5, 6), (27, 5, 7), (28, 5, 8), (29, 5, 12),
+    (30, 6, 1), (31, 6, 13), (32, 6, 3), (33, 6, 5), (34, 6, 6), (35, 6, 14),
+    (36, 7, 1), (37, 7, 15), (38, 7, 3), (39, 7, 12), (40, 7, 11),
+    (41, 8, 16), (42, 8, 17), (43, 8, 18), (44, 8, 19), (45, 8, 11),
+    (46, 9, 9),
+    (47, 10, 9),
+    (48, 11, 10),
+    (49, 12, 20),
+    (50, 13, 1), (51, 13, 2), (52, 13, 3), (53, 13, 9), (54, 13, 10),
+    (55, 14, 1), (56, 14, 2), (57, 14, 3), (58, 14, 7), (59, 14, 9), (60, 14, 10),
+    (61, 15, 1), (62, 15, 13), (63, 15, 3), (64, 15, 9), (65, 15, 10);
     -- ============================================================
     -- 8. ATUALIZAÇÃO DAS SEQUENCES
     -- ============================================================
-    SELECT setval(pg_get_serial_sequence('clientes', 'id'), COALESCE ((SELECT MAX(id)
-                                                                       FROM   clientes), 1));
-    SELECT setval(pg_get_serial_sequence('ingredientes', 'id'), COALESCE ((SELECT MAX(id)
-                                                                           FROM   ingredientes), 1));
-    SELECT setval(pg_get_serial_sequence('itensCardapio', 'id'), COALESCE ((SELECT MAX(id)
-                                                                            FROM   itensCardapio), 1));
-    SELECT setval(pg_get_serial_sequence('itensPedido', 'id'), COALESCE ((SELECT MAX(id)
-                                                                          FROM   itensPedido), 1));
-    SELECT setval(pg_get_serial_sequence('pedidos', 'id'), COALESCE ((SELECT MAX(id)
-                                                                      FROM   pedidos), 1));
-    SELECT setval(pg_get_serial_sequence('cardapios', 'id'), COALESCE ((SELECT MAX(id)
-                                                                        FROM   cardapios), 1));
-    SELECT setval(pg_get_serial_sequence('itemIngredienteCardapio', 'id'), COALESCE ((SELECT MAX(id)
-                                                                                      FROM   itemIngredienteCardapio), 1));
+    SELECT setval(pg_get_serial_sequence('clientes', 'id'), COALESCE((SELECT MAX(id) FROM clientes), 1));
+    SELECT setval(pg_get_serial_sequence('ingredientes', 'id'), COALESCE((SELECT MAX(id) FROM ingredientes), 1));
+    SELECT setval(pg_get_serial_sequence('itensCardapio', 'id'), COALESCE((SELECT MAX(id) FROM itensCardapio), 1));
+    SELECT setval(pg_get_serial_sequence('itensPedido', 'id'), COALESCE((SELECT MAX(id) FROM itensPedido), 1));
+    SELECT setval(pg_get_serial_sequence('pedidos', 'id'), COALESCE((SELECT MAX(id) FROM pedidos), 1));
+    SELECT setval(pg_get_serial_sequence('cardapios', 'id'), COALESCE((SELECT MAX(id) FROM cardapios), 1));
+    SELECT setval(pg_get_serial_sequence('itemIngredienteCardapio', 'id'), COALESCE((SELECT MAX(id) FROM itemIngredienteCardapio), 1));
 END;
 
 COMMIT TRANSACTION;

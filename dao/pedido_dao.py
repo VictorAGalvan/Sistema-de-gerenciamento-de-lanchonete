@@ -1,188 +1,142 @@
 from sqlalchemy import text
 
 from database.conexao import engine
-
-from models.Pedido import Pedido
+from dao.itens_pedido_dao import ItensPedidoDAO
+from models.PedidoMesa import PedidoMesa
+from models.PedidoCliente import PedidoCliente
 from models.Cliente import Cliente
-from models.ItensPedido import ItensPedidos
-from models.ItensCardapio import ItensCardapio
+from models.EstadoPedido import Recebido, NaFila, EmPreparo, Pronto
+
+
+ESTADOS_CHAR = {"Recebido": "R", "Na Fila": "N", "Em Preparo": "E", "Pronto": "P"}
+CHAR_PARA_ESTADO = {"R": Recebido, "N": NaFila, "E": EmPreparo, "P": Pronto}
 
 
 class PedidoDAO:
+    def __init__(self):
+        self.dao_itens_pedido = ItensPedidoDAO()
 
-    # Mapeamento entre o estado do pedido (model) e o CHAR da tabela pedidos
-    ESTADOS_CHAR = {
-        "Recebido": "R",
-        "Na Fila": "N",
-        "Em Preparo": "E",
-        "Pronto": "P",
-    }
+    def _estado_para_char(self, estado):
+        return ESTADOS_CHAR.get(str(estado), "R")
 
-    @staticmethod
-    def _estado_para_char(estado) -> str:
-        return PedidoDAO.ESTADOS_CHAR.get(str(estado), "R")
+    def _char_para_estado(self, char):
+        return CHAR_PARA_ESTADO.get(char, Recebido)()
 
-    @staticmethod
-    def _char_para_estado(char):
-        from models.EstadoPedido import Recebido, NaFila, EmPreparo, Pronto
-        mapa = {"R": Recebido, "N": NaFila, "E": EmPreparo, "P": Pronto}
-        return mapa.get(char, Recebido)()
+    def _montar_pedido(self, row):
+        itens = self.dao_itens_pedido.select_por_pedido(row.id)
+
+        if row.cliente_id is not None:
+            cliente = Cliente(
+                id=row.cliente_id, nome=row.cliente_nome,
+                cpf=row.cliente_cpf, telefone=row.cliente_telefone, senha=None
+            )
+            pedido = PedidoCliente(id=row.id, itens_pedidos=itens, cliente=cliente)
+        else:
+            pedido = PedidoMesa(id=row.id, itens_pedidos=itens, mesa=row.mesa)
+
+        pedido.estado = self._char_para_estado(row.estado)
+        return pedido
 
     def select(self):
-        sql = text("""
-            SELECT p.id,
-                   p.mesa,
-                   p.estado,
-                   cl.id  AS cliente_id,
-                   cl.nome AS cliente_nome,
-                   cl.cpf  AS cliente_cpf,
-                   cl.telefone AS cliente_telefone
-            FROM pedidos p
-            LEFT JOIN clientes cl
-                ON cl.id = p.idclientes
-            ORDER BY p.id
-        """)
         with engine.connect() as connection:
-            resultado = connection.execute(sql)
-            pedidos = []
+            resultado = connection.execute(text("""
+                SELECT p.id, p.mesa, p.estado,
+                       cl.id AS cliente_id, cl.nome AS cliente_nome,
+                       cl.cpf AS cliente_cpf, cl.telefone AS cliente_telefone
+                FROM pedidos p
+                LEFT JOIN clientes cl ON cl.id = p.idclientes
+                ORDER BY p.id
+            """))
+            return [self._montar_pedido(row) for row in resultado]
 
-            for row in resultado:
-                cliente = None
-                if row.cliente_id is not None:
-                    cliente = Cliente(
-                        id=row.cliente_id,
-                        nome=row.cliente_nome,
-                        cpf=row.cliente_cpf,
-                        telefone=row.cliente_telefone,
-                    )
-
-                pedido = Pedido(
-                    id=row.id,
-                    itens_pedidos=[],
-                    cliente=cliente,
-                    mesa=row.mesa,
-                )
-                pedido.estado = self._char_para_estado(row.estado)
-                pedidos.append(pedido)
-            return pedidos
+    def selectID(self, id_pedido):
+        with engine.connect() as connection:
+            row = connection.execute(
+                text("""
+                    SELECT p.id, p.mesa, p.estado,
+                           cl.id AS cliente_id, cl.nome AS cliente_nome,
+                           cl.cpf AS cliente_cpf, cl.telefone AS cliente_telefone
+                    FROM pedidos p
+                    LEFT JOIN clientes cl ON cl.id = p.idclientes
+                    WHERE p.id = :id
+                """),
+                {"id": id_pedido},
+            ).fetchone()
+            if row is None:
+                return None
+            return self._montar_pedido(row)
 
     def insert(self, pedido):
+        cliente = getattr(pedido, "cliente", None)
+        mesa = getattr(pedido, "mesa", None)
+
         with engine.begin() as connection:
             resultado = connection.execute(
                 text("""
-                    INSERT INTO pedidos
-                        (idclientes, mesa, estado)
-                    VALUES
-                        (:id_clientes, :mesa, :estado)
+                    INSERT INTO pedidos (idclientes, mesa, estado)
+                    VALUES (:id_cliente, :mesa, :estado)
                     RETURNING id
                 """),
                 {
-                    "id_clientes": pedido.cliente.id if pedido.cliente else None,
-                    "mesa": pedido.mesa if pedido.mesa is not None else 0,
-                    "estado": self._estado_para_char(getattr(pedido, "estado", None)),
+                    "id_cliente": cliente.id if cliente else None,
+                    "mesa": mesa,
+                    "estado": self._estado_para_char(pedido.estado),
                 },
             )
-
-            id_pedido = resultado.scalar()
+            pedido.id = resultado.scalar()
 
             for item in pedido.itens_pedidos:
-                connection.execute(
+                resultado_item = connection.execute(
                     text("""
-                        INSERT INTO itensPedido
-                            (iditensCardapio, quantidade, observacao)
-                        VALUES
-                            (:id_item, :quantidade, :observacao)
+                        INSERT INTO itensPedido (idpedido, iditensCardapio, quantidade, observacao)
+                        VALUES (:id_pedido, :id_item_cardapio, :quantidade, :observacao)
+                        RETURNING id
                     """),
                     {
-                        "id_item": item.item_cardapio.id,
+                        "id_pedido": pedido.id,
+                        "id_item_cardapio": item.id,
                         "quantidade": item.quantidade,
                         "observacao": item.observacao,
                     },
                 )
+                id_item_pedido = resultado_item.scalar()
 
-        pedido.id = id_pedido
+                for ingrediente in item.ingredientes:
+                    connection.execute(
+                        text("""
+                            INSERT INTO itemIngredienteItensPedido (iditensPedido, idingredientes)
+                            VALUES (:id_item_pedido, :id_ingrediente)
+                        """),
+                        {"id_item_pedido": id_item_pedido, "id_ingrediente": ingrediente.id},
+                    )
 
     def update(self, pedido):
         with engine.begin() as connection:
             connection.execute(
-                text("""
-                    UPDATE pedidos
-                    SET idclientes = :id_clientes,
-                        mesa = :mesa,
-                        estado = :estado
-                    WHERE id = :id_pedido
-                """),
-                {
-                    "id_clientes": pedido.cliente.id if pedido.cliente else None,
-                    "mesa": pedido.mesa if pedido.mesa is not None else 0,
-                    "estado": self._estado_para_char(getattr(pedido, "estado", None)),
-                    "id_pedido": pedido.id,
-                },
+                text("UPDATE pedidos SET estado = :estado WHERE id = :id"),
+                {"estado": self._estado_para_char(pedido.estado), "id": pedido.id},
             )
 
-            for item in pedido.itens_pedidos:
-                connection.execute(
-                    text("""
-                        INSERT INTO itensPedido
-                            (iditensCardapio, quantidade, observacao)
-                        VALUES
-                            (:id_item, :quantidade, :observacao)
-                    """),
-                    {
-                        "id_item": item.item_cardapio.id,
-                        "quantidade": item.quantidade,
-                        "observacao": item.observacao,
-                    },
-                )
-
-    def delete(self, id_pedido):
+    def delete(self, pedido):
         with engine.begin() as connection:
-            connection.execute(
-                text("""
-                    DELETE FROM pedidos
-                    WHERE id = :id_pedido
-                """),
-                {"id_pedido": id_pedido},
-            )
+            connection.execute(text("DELETE FROM itensPedido WHERE idpedido = :id"), {"id": pedido.id})
+            connection.execute(text("DELETE FROM pedidos WHERE id = :id"), {"id": pedido.id})
 
-    def selectID(self, id_pedido):
-        sql = text("""
-            SELECT
-                p.id AS pedido_id,
-                p.mesa,
-                p.estado,
-                cl.id AS cliente_id,
-                cl.nome AS cliente_nome,
-                cl.cpf AS cliente_cpf,
-                cl.telefone AS cliente_telefone
-            FROM pedidos p
-            LEFT JOIN clientes cl
-                ON cl.id = p.idclientes
-            WHERE p.id = :id_pedido;
-        """)
+    def select_nao_finalizados(self):
+        return [p for p in self.select() if not isinstance(p.estado, Pronto)]
 
+    def select_por_cliente(self, id_cliente):
         with engine.connect() as connection:
-            primeira_linha = connection.execute(sql, {"id_pedido": id_pedido}).fetchone()
-
-        if not primeira_linha:
-            return None
-
-        cliente = None
-
-        if primeira_linha.cliente_id is not None:
-            cliente = Cliente(
-                id=primeira_linha.cliente_id,
-                nome=primeira_linha.cliente_nome,
-                cpf=primeira_linha.cliente_cpf,
-                telefone=primeira_linha.cliente_telefone,
+            resultado = connection.execute(
+                text("""
+                    SELECT p.id, p.mesa, p.estado,
+                           cl.id AS cliente_id, cl.nome AS cliente_nome,
+                           cl.cpf AS cliente_cpf, cl.telefone AS cliente_telefone
+                    FROM pedidos p
+                    JOIN clientes cl ON cl.id = p.idclientes
+                    WHERE cl.id = :id_cliente
+                    ORDER BY p.id
+                """),
+                {"id_cliente": id_cliente},
             )
-
-        pedido = Pedido(
-            id=primeira_linha.pedido_id,
-            itens_pedidos=[],
-            cliente=cliente,
-            mesa=primeira_linha.mesa,
-        )
-        pedido.estado = self._char_para_estado(primeira_linha.estado)
-
-        return pedido
+            return [self._montar_pedido(row) for row in resultado]

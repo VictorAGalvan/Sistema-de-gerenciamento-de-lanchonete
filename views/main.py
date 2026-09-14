@@ -1,6 +1,6 @@
 import tkinter as tk
 from views.login import LoginFrame
-from views.cardapio import Cardapio
+from views.cardapio_view import Cardapio
 from views.ver_pedidos import MeuPedido, Pedidos
 from views.editar_cardapio import ListaCardapios
 class JanelaPrincipal(tk.Tk):
