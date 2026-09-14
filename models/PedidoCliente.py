@@ -1,6 +1,6 @@
 
 
-from models import Cliente
+from models.Cliente import Cliente
 from models.ItensPedido import ItensPedido
 from models.Pedido import Pedido
 

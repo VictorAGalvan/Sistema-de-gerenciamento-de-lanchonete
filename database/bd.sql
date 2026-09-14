@@ -3,6 +3,7 @@ CREATE TABLE clientes (
        nome     VARCHAR NOT NULL,
        cpf      VARCHAR NOT NULL,
        telefone VARCHAR,
+       senha    VARCHAR NOT NULL DEFAULT 'trocar123',
        UNIQUE (cpf)
 );
 
@@ -22,6 +23,7 @@ CREATE TABLE itensCardapio (
 
 CREATE TABLE itensPedido (
        id              SERIAL  PRIMARY KEY,
+       idpedido        INT,
        iditensCardapio INT     NOT NULL,
        quantidade      INT     NOT NULL,
        observacao      VARCHAR
@@ -30,7 +32,7 @@ CREATE TABLE itensPedido (
 CREATE TABLE pedidos (
        id         SERIAL PRIMARY KEY,
        idclientes INT   ,
-       mesa       INT    NOT NULL,
+       mesa       INT,
        estado     CHAR   NOT NULL
 );
 
@@ -47,11 +49,20 @@ CREATE TABLE itemIngredienteCardapio (
        idingredientes  INT    NOT NULL
 );
 
+CREATE TABLE itemIngredienteItensPedido (
+       id            SERIAL PRIMARY KEY,
+       iditensPedido INT    NOT NULL,
+       idingredientes INT   NOT NULL
+);
+
 ALTER TABLE pedidos
        ADD FOREIGN KEY (idclientes) REFERENCES clientes (id);
 
 ALTER TABLE itensPedido
        ADD FOREIGN KEY (iditensCardapio) REFERENCES itensCardapio (id);
+
+ALTER TABLE itensPedido
+       ADD FOREIGN KEY (idpedido) REFERENCES pedidos (id);
 
 ALTER TABLE cardapios
        ADD FOREIGN KEY (iditensCardapio) REFERENCES itensCardapio (id);
@@ -60,4 +71,10 @@ ALTER TABLE itemIngredienteCardapio
        ADD FOREIGN KEY (iditensCardapio) REFERENCES itensCardapio (id);
 
 ALTER TABLE itemIngredienteCardapio
+       ADD FOREIGN KEY (idingredientes) REFERENCES ingredientes (id);
+
+ALTER TABLE itemIngredienteItensPedido
+       ADD FOREIGN KEY (iditensPedido) REFERENCES itensPedido (id);
+
+ALTER TABLE itemIngredienteItensPedido
        ADD FOREIGN KEY (idingredientes) REFERENCES ingredientes (id);

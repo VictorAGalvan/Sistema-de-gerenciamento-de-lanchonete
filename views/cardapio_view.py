@@ -77,14 +77,11 @@ class Cardapio(tk.Toplevel):
         botao_fazer_pedido.pack(pady=10)
 
     def fazer_pedido(self):
-        for item_pedido in self.carrinho:
-            self.itens_pedido_controler.criar_item_pedido(item_pedido)
-
         if self.cliente is None:
             mesa = int(self.entry_mesa.get())
-            novo_pedido = PedidoFactory.criar_pedido_mesa(mesa, self.carrinho)
+            novo_pedido = PedidoFactory.criar_pedido_mesa(None, mesa, self.carrinho)
         else:
-            novo_pedido = PedidoFactory.criar_pedido_cliente(self.cliente, self.carrinho)
+            novo_pedido = PedidoFactory.criar_pedido_cliente(None, self.cliente, self.carrinho)
 
         self.pedido_controler.criar_pedido(novo_pedido)
         self.destroy()
