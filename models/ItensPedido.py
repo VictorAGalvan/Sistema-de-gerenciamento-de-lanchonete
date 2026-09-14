@@ -1,21 +1,18 @@
-from models import ItensCardapio, Pedido
+from models.ItensCardapio import ItensCardapio
 
 
-class ItensPedidos(ItensCardapio):
-    def __init__(self, pedido:Pedido, item_cardapio:ItensCardapio, quantidade:int, observacao:str,nome:str, preco:float, categoria:str):
-        super().__init__(nome, preco, categoria)
-        self.pedido = pedido
-        self.item_cardapio = item_cardapio
-        self.quantidade = quantidade
-        self.observacao = observacao
+class ItensPedido(ItensCardapio):
+    def __init__(self, item_cardapio: ItensCardapio, quantidade: int, observacao: str = ""):
+        super().__init__(
+            item_cardapio.id,
+            item_cardapio.nome,
+            item_cardapio.preco,
+            item_cardapio.categoria,
+            list(item_cardapio.ingredientes)
+        )
+        self.__quantidade = quantidade
+        self.__observacao = observacao
 
-
-    @property
-    def pedido(self):
-        return self.__pedido
-    @property
-    def item_cardapio(self):
-        return self.__item_cardapio
     @property
     def quantidade(self):
         return self.__quantidade
@@ -23,12 +20,7 @@ class ItensPedidos(ItensCardapio):
     def observacao(self):
         return self.__observacao
 
-    @pedido.setter
-    def pedido(self, n_pedido):
-        self.__pedido = n_pedido   
-    @item_cardapio.setter
-    def item_cardapio(self, n_item_cardapio):
-        self.__item_cardapio = n_item_cardapio
+
     @quantidade.setter
     def quantidade(self, n_quantidade):
         self.__quantidade = n_quantidade

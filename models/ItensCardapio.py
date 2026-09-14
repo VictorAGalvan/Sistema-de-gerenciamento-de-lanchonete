@@ -1,10 +1,23 @@
-class ItensCardapio():
-    def __init__(self,id:int, nome:str,preco:float,categoria:str):
-        self.id = id
-        self.nome = nome
-        self.preco = preco
-        self.categoria = categoria
+from models.Ingrediente import Ingrediente
 
+
+class ItensCardapio():
+    def __init__(self,id:int, nome:str,preco:float,categoria:str, ingredientes:list[Ingrediente]):
+        self.__id = id
+        self.__nome = nome
+        self.__preco = preco
+        self.__categoria = categoria
+        self.__ingredientes = ingredientes
+
+
+    @property
+    def id(self):
+        return self.__id
+
+    @property
+    def ingredientes(self):
+        return self.__ingredientes
+    
     @property
     def nome(self):
         return self.__nome
@@ -17,6 +30,13 @@ class ItensCardapio():
     def categoria(self):
         return self.__categoria
 
+
+    @id.setter
+    def id(self, n_id):
+        self.__id = n_id
+    @ingredientes.setter
+    def ingredientes(self, n_ingredientes):
+        self.__ingredientes = n_ingredientes
     @nome.setter
     def nome(self, n_nome):
         self.__nome = n_nome
@@ -26,3 +46,11 @@ class ItensCardapio():
     @categoria.setter
     def categoria(self, n_categoria):
         self.__categoria = n_categoria
+
+    def __eq__(self, outro):
+        if isinstance(outro, ItensCardapio):
+            return self.__id == outro.__id
+        return False
+
+    def __hash__(self):
+        return hash(self.__id)

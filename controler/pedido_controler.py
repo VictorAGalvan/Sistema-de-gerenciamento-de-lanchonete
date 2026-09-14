@@ -1,21 +1,27 @@
 from dao.pedido_dao import PedidoDAO
 
-class PedidoController:
 
+class PedidoControler:
     def __init__(self):
         self.dao = PedidoDAO()
 
-    def select_pedido(self):
+    def listar_pedidos(self):
         return self.dao.select()
 
-    def insert_pedido(self, pedido):
-        return self.dao.insert(pedido)
+    def buscar_pedido(self, id_pedido):
+        return self.dao.selectID(id_pedido)
 
-    def update_pedido(self, pedido):
-        return self.dao.update(pedido)
+    def criar_pedido(self, pedido):
+        self.dao.insert(pedido)
+        for item_pedido in pedido.itens_pedidos:
+            self.dao.insertItemPedido(pedido.id, item_pedido.id)
 
-    def delete_pedido(self, pedido):
-        return self.dao.delete(pedido)
+    def avancar_pedido(self, pedido):
+        pedido.estado.avancar(pedido)
+        self.dao.update(pedido)
+        
+    def listar_nao_finalizados(self):
+      return self.dao.select_nao_finalizados()
 
-    def selectID_pedido(self, id):
-        return self.dao.selectID(id)
+    def listar_por_cliente(self, id_cliente):
+        return self.dao.select_por_cliente(id_cliente)

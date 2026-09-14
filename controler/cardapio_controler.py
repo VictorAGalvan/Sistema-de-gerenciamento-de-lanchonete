@@ -1,21 +1,33 @@
 from dao.cardapio_dao import CardapioDAO
 
-class CardapioController:
 
+class CardapioControler:
     def __init__(self):
         self.dao = CardapioDAO()
 
-    def select_cardapio(self):
+    def listar_cardapios(self):
         return self.dao.select()
 
-    def insert_cardapio(self, cardapio):
-        return self.dao.insert(cardapio)
+    def buscar_cardapio(self, id_cardapio):
+        return self.dao.selectID(id_cardapio)
 
-    def update_cardapio(self, cardapio):
-        return self.dao.update(cardapio)
+    def criar_cardapio(self, cardapio):
+        self.dao.insert(cardapio)
+        for item in cardapio.itens:
+            self.dao.insertItem(cardapio.id, item.id)
 
-    def delete_cardapio(self, cardapio):
-        return self.dao.delete(cardapio)
+    def editar_cardapio(self, cardapio):
+        self.dao.update(cardapio)
+        self.dao.deleteItens(cardapio.id)
+        for item in cardapio.itens:
+            self.dao.insertItem(cardapio.id, item.id)
 
-    def selectID_cardapio(self, id):
-        return self.dao.selectID(id)
+    def remover_cardapio(self, cardapio):
+        self.dao.deleteItens(cardapio.id)
+        self.dao.delete(cardapio)
+
+    def get_ativo_id(self):
+      return self.dao.get_ativo_id()
+
+    def tornar_ativo(self, id_cardapio):
+        self.dao.set_ativo(id_cardapio)
