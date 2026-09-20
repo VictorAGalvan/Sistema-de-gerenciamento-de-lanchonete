@@ -13,21 +13,18 @@ class CardapioControler:
 
     def criar_cardapio(self, cardapio):
         self.dao.insert(cardapio)
-        for item in cardapio.itens:
-            self.dao.insertItem(cardapio.id, item.id)
 
     def editar_cardapio(self, cardapio):
         self.dao.update(cardapio)
-        self.dao.deleteItens(cardapio.id)
-        for item in cardapio.itens:
-            self.dao.insertItem(cardapio.id, item.id)
 
     def remover_cardapio(self, cardapio):
-        self.dao.deleteItens(cardapio.id)
         self.dao.delete(cardapio)
 
     def get_ativo_id(self):
-      return self.dao.get_ativo_id()
+        return self.dao.get_ativo_id()
+
+    def get_ativo(self):
+        return self.dao.get_ativo()
 
     def tornar_ativo(self, id_cardapio):
         self.dao.set_ativo(id_cardapio)
