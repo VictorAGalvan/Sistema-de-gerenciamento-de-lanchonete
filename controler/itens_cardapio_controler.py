@@ -9,6 +9,9 @@ class ItensCardapioControler:
     def listar_itens_cardapio(self):
         return self.dao.select()
 
+    def listar_por_cardapio(self, id_cardapio):
+        return self.dao.select_por_cardapio(id_cardapio)
+
     def buscar_item_cardapio(self, id_item):
         return self.dao.selectID(id_item)
 

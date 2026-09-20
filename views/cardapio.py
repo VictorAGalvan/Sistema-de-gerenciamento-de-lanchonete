@@ -4,6 +4,7 @@ from controler.itens_pedido_controler import ItensPedidoControler
 from controler.pedido_controler import PedidoControler
 from factory.PedidoFactory import PedidoFactory
 from models.ItensPedido import ItensPedido
+from controler.cardapio_controler import CardapioControler
 
 
 class Cardapio(tk.Toplevel):
@@ -11,6 +12,7 @@ class Cardapio(tk.Toplevel):
         super().__init__(master)
         self.title("Cardápio")
         self.geometry("400x300")
+        self.cardapio_controler = CardapioControler()
         self.itens_cardapio_controler = ItensCardapioControler()
         self.itens_pedido_controler = ItensPedidoControler()
         self.pedido_controler = PedidoControler()
@@ -53,7 +55,10 @@ class Cardapio(tk.Toplevel):
         self.label = tk.Label(self, text="Bem-vindo ao Cardápio!")
         self.label.pack(pady=5)
 
-        for item in self.itens_cardapio_controler.listar_itens_cardapio():
+        ativo_id = self.cardapio_controler.get_ativo_id()
+        itens_do_cardapio = self.itens_cardapio_controler.listar_por_cardapio(ativo_id) if ativo_id is not None else []
+
+        for item in itens_do_cardapio:
             linha = tk.Frame(self)
             linha.pack(pady=5, fill="x")
 
@@ -77,12 +82,9 @@ class Cardapio(tk.Toplevel):
         botao_fazer_pedido.pack(pady=10)
 
     def fazer_pedido(self):
-        for item_pedido in self.carrinho:
-            self.itens_pedido_controler.criar_item_pedido(item_pedido)
-
         if self.cliente is None:
             mesa = int(self.entry_mesa.get())
-            novo_pedido = PedidoFactory.criar_pedido_mesa(mesa, self.carrinho)
+            novo_pedido = PedidoFactory.criar_pedido_mesa( mesa, self.carrinho)
         else:
             novo_pedido = PedidoFactory.criar_pedido_cliente(self.cliente, self.carrinho)
 

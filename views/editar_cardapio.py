@@ -62,7 +62,7 @@ class EditarCardapioWindow(tk.Toplevel):
         self.cardapio_controler = CardapioControler()
         self.itens_cardapio_controler = ItensCardapioControler()
         self.on_salvar = on_salvar
-        self.cardapio = cardapio if cardapio is not None else Cardapio(id=None, data=date.today(), versao="", itens=[])
+        self.cardapio = cardapio if cardapio is not None else Cardapio(id=None, data=date.today(), versao="")
         self.eh_novo = cardapio is None
         self.title("Novo Cardápio" if self.eh_novo else "Editar Cardápio")
         self.geometry("400x500")
@@ -95,7 +95,10 @@ class EditarCardapioWindow(tk.Toplevel):
         for widget in self.frame_itens.winfo_children():
             widget.destroy()
 
-        for item in self.cardapio.itens:
+        if self.cardapio.id is None:
+            return  # cardápio ainda não salvo, não tem itens pra buscar
+
+        for item in self.itens_cardapio_controler.listar_por_cardapio(self.cardapio.id):
             linha = tk.Frame(self.frame_itens)
             linha.pack(pady=2, fill="x")
 
@@ -104,6 +107,9 @@ class EditarCardapioWindow(tk.Toplevel):
             tk.Button(linha, text="Remover", command=lambda i=item: self.remover_item(i)).pack(side="left", padx=2)
 
     def adicionar_item(self):
+        if self.cardapio.id is None:
+            self.label_erro.config(text="Salve o cardápio antes de adicionar itens.")
+            return
         NovoItemWindow(self.cardapio, master=self, on_salvar=self.desenhar_itens)
 
     def editar_item(self, item_cardapio):
@@ -125,12 +131,13 @@ class EditarCardapioWindow(tk.Toplevel):
 
         if self.eh_novo:
             self.cardapio_controler.criar_cardapio(self.cardapio)
+            self.eh_novo = False
+            self.desenhar_itens()  # agora que tem id, permite mostrar/adicionar itens
         else:
             self.cardapio_controler.editar_cardapio(self.cardapio)
 
         if self.on_salvar:
             self.on_salvar()
-        self.destroy()
 
 
 class NovoItemWindow(tk.Toplevel):
@@ -174,11 +181,10 @@ class NovoItemWindow(tk.Toplevel):
             nome=self.entry_nome.get(),
             preco=preco,
             categoria=self.entry_categoria.get(),
-            ingredientes=[]
+            ingredientes=[],
+            id_cardapio=self.cardapio.id
         )
         self.itens_cardapio_controler.criar_item_cardapio(novo_item)
-        if novo_item not in self.cardapio.itens:
-            self.cardapio.itens.append(novo_item)
 
         if self.on_salvar:
             self.on_salvar()

@@ -13,8 +13,6 @@ class PedidoControler:
 
     def criar_pedido(self, pedido):
         self.dao.insert(pedido)
-        for item_pedido in pedido.itens_pedidos:
-            self.dao.insertItemPedido(pedido.id, item_pedido.id)
 
     def avancar_pedido(self, pedido):
         pedido.estado.avancar(pedido)
