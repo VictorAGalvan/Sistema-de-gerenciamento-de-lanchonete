@@ -65,27 +65,44 @@ BEGIN;
     -- ============================================================
     -- 3. ITENS DO CARDÁPIO
     -- ============================================================
-    INSERT  INTO itensCardapio (
-        id,
-        nome,
-        preco,
-        categoria
-    )
-    VALUES                    (1, 'X-Burger', 18.90, 'Hambúrguer'),
-    (2, 'X-Salada', 20.90, 'Hambúrguer'),
-    (3, 'X-Bacon', 22.90, 'Hambúrguer'),
-    (4, 'X-Egg', 21.90, 'Hambúrguer'),
-    (5, 'X-Tudo', 27.90, 'Hambúrguer'),
-    (6, 'X-Frango', 21.90, 'Hambúrguer'),
-    (7, 'X-Calabresa', 22.50, 'Hambúrguer'),
-    (8, 'Hot Dog Especial', 19.90, 'Hot Dog'),
-    (9, 'Batata Frita P', 10.90, 'Acompanhamento'),
-    (10, 'Batata Frita G', 16.90, 'Acompanhamento'),
-    (11, 'Refrigerante Lata', 6.00, 'Bebida'),
-    (12, 'Água Mineral', 4.00, 'Bebida'),
-    (13, 'Combo X-Burger', 29.90, 'Combo'),
-    (14, 'Combo X-Bacon', 33.90, 'Combo'),
-    (15, 'Combo X-Frango', 32.90, 'Combo');
+    INSERT INTO itensCardapio (id, nome, preco, categoria, idcardapio) VALUES
+(1, 'X-Burger', 18.90, 'Hambúrguer', 3),
+(2, 'X-Salada', 20.90, 'Hambúrguer', 3),
+(3, 'X-Bacon', 22.90, 'Hambúrguer', 3),
+(4, 'X-Egg', 21.90, 'Hambúrguer', 3),
+(5, 'X-Tudo', 27.90, 'Hambúrguer', 3),
+(6, 'X-Frango', 21.90, 'Hambúrguer', 3),
+(7, 'X-Calabresa', 22.50, 'Hambúrguer', 3),
+(8, 'Hot Dog Especial', 19.90, 'Hot Dog', 3),
+(9, 'Batata Frita P', 10.90, 'Acompanhamento', 3),
+(10, 'Batata Frita G', 16.90, 'Acompanhamento', 3),
+(11, 'Refrigerante Lata', 6.00, 'Bebida', 3),
+(12, 'Água Mineral', 4.00, 'Bebida', 3),
+(13, 'Combo X-Burger', 29.90, 'Combo', 3),
+(14, 'Combo X-Bacon', 33.90, 'Combo', 3),
+(15, 'Combo X-Frango', 32.90, 'Combo', 3),
+-- cópias para a versão 1.0
+(16, 'X-Burger', 18.90, 'Hambúrguer', 1),
+(17, 'X-Salada', 20.90, 'Hambúrguer', 1),
+(18, 'X-Bacon', 22.90, 'Hambúrguer', 1),
+(19, 'X-Egg', 21.90, 'Hambúrguer', 1),
+(20, 'X-Tudo', 27.90, 'Hambúrguer', 1),
+(21, 'X-Frango', 21.90, 'Hambúrguer', 1),
+(22, 'X-Calabresa', 22.50, 'Hambúrguer', 1),
+(23, 'Hot Dog Especial', 19.90, 'Hot Dog', 1),
+-- cópias para a versão 2.0
+(24, 'X-Burger', 18.90, 'Hambúrguer', 2),
+(25, 'X-Salada', 20.90, 'Hambúrguer', 2),
+(26, 'X-Bacon', 22.90, 'Hambúrguer', 2),
+(27, 'X-Egg', 21.90, 'Hambúrguer', 2),
+(28, 'X-Tudo', 27.90, 'Hambúrguer', 2),
+(29, 'X-Frango', 21.90, 'Hambúrguer', 2),
+(30, 'X-Calabresa', 22.50, 'Hambúrguer', 2),
+(31, 'Hot Dog Especial', 19.90, 'Hot Dog', 2),
+(32, 'Batata Frita P', 10.90, 'Acompanhamento', 2),
+(33, 'Batata Frita G', 16.90, 'Acompanhamento', 2),
+(34, 'Refrigerante Lata', 6.00, 'Bebida', 2),
+(35, 'Água Mineral', 4.00, 'Bebida', 2);
     -- ============================================================
     -- 4. PEDIDOS
     -- Estados: R=Recebido, N=Na Fila, E=Em Preparo, P=Pronto
@@ -195,59 +212,10 @@ BEGIN;
     -- 6. CARDÁPIOS
     -- 3 versões
     -- ============================================================
-    INSERT  INTO cardapios (
-        id,
-        iditensCardapio,
-        data,
-        versao
-    )
-    VALUES                (1, 1, '2026-07-01', '1.0'),
-    (2, 2, '2026-07-01', '1.0'),
-    (3, 3, '2026-07-01', '1.0'),
-    (4, 4, '2026-07-01', '1.0'),
-    (5, 5, '2026-07-01', '1.0'),
-    (6, 6, '2026-07-01', '1.0'),
-    (7, 7, '2026-07-01', '1.0'),
-    (8, 8, '2026-07-01', '1.0');
-    INSERT  INTO cardapios (
-        id,
-        iditensCardapio,
-        data,
-        versao
-    )
-    VALUES                (9, 1, '2026-08-01', '2.0'),
-    (10, 2, '2026-08-01', '2.0'),
-    (11, 3, '2026-08-01', '2.0'),
-    (12, 4, '2026-08-01', '2.0'),
-    (13, 5, '2026-08-01', '2.0'),
-    (14, 6, '2026-08-01', '2.0'),
-    (15, 7, '2026-08-01', '2.0'),
-    (16, 8, '2026-08-01', '2.0'),
-    (17, 9, '2026-08-01', '2.0'),
-    (18, 10, '2026-08-01', '2.0'),
-    (19, 11, '2026-08-01', '2.0'),
-    (20, 12, '2026-08-01', '2.0');
-    INSERT  INTO cardapios (
-        id,
-        iditensCardapio,
-        data,
-        versao
-    )
-    VALUES                (21, 1, '2026-09-01', '3.0'),
-    (22, 2, '2026-09-01', '3.0'),
-    (23, 3, '2026-09-01', '3.0'),
-    (24, 4, '2026-09-01', '3.0'),
-    (25, 5, '2026-09-01', '3.0'),
-    (26, 6, '2026-09-01', '3.0'),
-    (27, 7, '2026-09-01', '3.0'),
-    (28, 8, '2026-09-01', '3.0'),
-    (29, 9, '2026-09-01', '3.0'),
-    (30, 10, '2026-09-01', '3.0'),
-    (31, 11, '2026-09-01', '3.0'),
-    (32, 12, '2026-09-01', '3.0'),
-    (33, 13, '2026-09-01', '3.0'),
-    (34, 14, '2026-09-01', '3.0'),
-    (35, 15, '2026-09-01', '3.0');
+    INSERT INTO cardapios (id, data, versao, ativo) VALUES
+    (1, '2026-07-01', '1.0', false),
+    (2, '2026-08-01', '2.0', false),
+    (3, '2026-09-01', '3.0', true);
     -- ============================================================
     -- 7. RELAÇÃO ITEM CARDÁPIO × INGREDIENTES
     -- ============================================================

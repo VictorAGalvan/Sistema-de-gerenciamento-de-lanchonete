@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 
-password = "postgres"  # senha do banco de dados
+password = "1234567"  # senha do banco de dados
 user = "postgres"   # usuário do banco de dados
 port = "5432" # porta do banco de dados
 database = "lanchoneteDB" # nome do banco de dados

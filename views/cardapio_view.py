@@ -84,7 +84,7 @@ class Cardapio(tk.Toplevel):
     def fazer_pedido(self):
         if self.cliente is None:
             mesa = int(self.entry_mesa.get())
-            novo_pedido = PedidoFactory.criar_pedido_mesa( mesa, self.carrinho)
+            novo_pedido = PedidoFactory.criar_pedido_mesa(None, mesa, self.carrinho)
         else:
             novo_pedido = PedidoFactory.criar_pedido_cliente(None, self.cliente, self.carrinho)
 
