@@ -78,3 +78,12 @@ ALTER TABLE itemIngredienteItensPedido
 
 ALTER TABLE itemIngredienteItensPedido
        ADD FOREIGN KEY (idingredientes) REFERENCES ingredientes (id);
+      
+      
+-- inverter a FK: item pertence a um cardápio
+ALTER TABLE itensCardapio ADD COLUMN idcardapio INT;
+ALTER TABLE itensCardapio ADD FOREIGN KEY (idcardapio) REFERENCES cardapios (id);
+ALTER TABLE cardapios DROP COLUMN iditensCardapio;
+
+-- campo ativo no cardápio, substituindo a variável solta que tínhamos no mock
+ALTER TABLE cardapios ADD COLUMN ativo BOOLEAN NOT NULL DEFAULT FALSE;
