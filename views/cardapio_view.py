@@ -7,11 +7,10 @@ from models.ItensPedido import ItensPedido
 from controler.cardapio_controler import CardapioControler
 
 
-class Cardapio(tk.Toplevel):
-    def __init__(self, master=None, cliente=None):
-        super().__init__(master)
-        self.title("Cardápio")
-        self.geometry("400x300")
+class Cardapio(tk.Frame):
+    def __init__(self, parent, app, cliente=None):
+        super().__init__(parent)
+        self.app = app
         self.cardapio_controler = CardapioControler()
         self.itens_cardapio_controler = ItensCardapioControler()
         self.itens_pedido_controler = ItensPedidoControler()
@@ -78,20 +77,35 @@ class Cardapio(tk.Toplevel):
             self.entry_mesa = tk.Entry(self)
             self.entry_mesa.pack(pady=5)
 
-        botao_fazer_pedido = tk.Button(self, text="Fazer Pedido", command=self.fazer_pedido)
-        botao_fazer_pedido.pack(pady=10)
+        self.label_erro = tk.Label(self, text="", fg="red")
+        self.label_erro.pack(pady=5)
+
+        botoes = tk.Frame(self)
+        botoes.pack(pady=10)
+        tk.Button(botoes, text="Fazer Pedido", command=self.fazer_pedido).pack(side="left", padx=5)
+        tk.Button(botoes, text="Voltar", command=self.app.voltar_menu).pack(side="left", padx=5)
 
     def fazer_pedido(self):
+        if not self.carrinho:
+            self.label_erro.config(text="Adicione pelo menos um item.")
+            return
+
         if self.cliente is None:
-            mesa = int(self.entry_mesa.get())
+            try:
+                mesa = int(self.entry_mesa.get())
+            except ValueError:
+                self.label_erro.config(text="Número da mesa inválido.")
+                return
             novo_pedido = PedidoFactory.criar_pedido_mesa(None, mesa, self.carrinho)
         else:
             novo_pedido = PedidoFactory.criar_pedido_cliente(None, self.cliente, self.carrinho)
 
         self.pedido_controler.criar_pedido(novo_pedido)
-        self.destroy()
+        self.app.voltar_menu()
 
 
+# Popup mantido como Toplevel de propósito: edita o item_pedido que está
+# dentro do carrinho do Frame Cardapio, e trocar de tela perderia o carrinho.
 class ItensDetail(tk.Toplevel):
     def __init__(self, item_cardapio, item_pedido, master=None):
         super().__init__(master)

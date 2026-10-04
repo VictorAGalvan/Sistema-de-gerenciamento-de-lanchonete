@@ -7,44 +7,59 @@ class JanelaPrincipal(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Sistema de Pedidos")
-        self.geometry("400x300")
-        self.login_frame = LoginFrame(self)
+        self.geometry("500x500")
+        self.cliente = None
+        self.eh_admin = False
+
+        self.container = tk.Frame(self)
+        self.container.pack(fill="both", expand=True)
+
+        self.frame_atual = None
+        self.mostrar(LoginFrame)
+
+    def mostrar(self, classe_frame, **kwargs):
+        if self.frame_atual is not None:
+            self.frame_atual.destroy()
+        self.frame_atual = classe_frame(self.container, self, **kwargs)
+        self.frame_atual.pack(fill="both", expand=True)
 
     def abrir_sistema_admin(self):
-
-        self.login_frame.destroy()
-
-        self.ver_pedido = tk.Button(self, text="Ver pedidos", command=self.abrir_pedidos)
-        self.ver_pedido.pack(pady=10)
-
-        self.ver_cardapio = tk.Button(self, text="Ver cardápio", command=self.abrir_cardapio)
-        self.ver_cardapio.pack(pady=10)
-
-        self.editar_cardapio = tk.Button(self, text="Editar cardápio",command=self.abrir_editar_cardapio)
-        self.editar_cardapio.pack(pady=10)
+        self.eh_admin = True
+        self.mostrar(MenuAdmin)
 
     def abrir_sistema_usuario(self):
-        self.cliente = self.login_frame.cliente
-        self.login_frame.destroy()
-        self.ver_cardapio = tk.Button(self, text="Ver cardápio", command=self.abrir_cardapio_cliente)
-        self.ver_cardapio.pack(pady=10)
-        self.meu_pedido = tk.Button(self, text="Meu pedido", command=self.abrir_meu_pedido)
-        self.meu_pedido.pack(pady=10)
+        self.cliente = self.frame_atual.cliente
+        self.eh_admin = False
+        self.mostrar(MenuUsuario)
 
-    def abrir_cardapio(self):
-        Cardapio(self)
+    def voltar_menu(self):
+        self.mostrar(MenuAdmin if self.eh_admin else MenuUsuario)
+    def voltar_menu(self):
+        self.mostrar(MenuAdmin if self.eh_admin else MenuUsuario)
 
-    def abrir_cardapio_cliente(self):
-        Cardapio(self,cliente=self.cliente)
+    def sair(self):
+        self.cliente = None
+        self.eh_admin = False
+        self.mostrar(LoginFrame)
 
-    def abrir_pedidos(self):
-        Pedidos(self)
 
-    def abrir_editar_cardapio(self):
-        ListaCardapios(self)
+class MenuAdmin(tk.Frame):
+    def __init__(self, parent, app):
+        super().__init__(parent)
+        tk.Button(self, text="Ver pedidos", command=lambda: app.mostrar(Pedidos)).pack(pady=10)
+        tk.Button(self, text="Ver cardápio", command=lambda: app.mostrar(Cardapio)).pack(pady=10)
+        tk.Button(self, text="Editar cardápio", command=lambda: app.mostrar(ListaCardapios)).pack(pady=10)
+        tk.Button(self, text="Sair", command=app.sair).pack(pady=10)
 
-    def abrir_meu_pedido(self):
-        MeuPedido(cliente=self.cliente,master=self)
+
+class MenuUsuario(tk.Frame):
+    def __init__(self, parent, app):
+        super().__init__(parent)
+        tk.Button(self, text="Ver cardápio",
+                  command=lambda: app.mostrar(Cardapio, cliente=app.cliente)).pack(pady=10)
+        tk.Button(self, text="Meu pedido",
+                  command=lambda: app.mostrar(MeuPedido, cliente=app.cliente)).pack(pady=10)
+        tk.Button(self, text="Sair", command=app.sair).pack(pady=10)
 
 if __name__ == "__main__":
     app = JanelaPrincipal()

@@ -4,10 +4,9 @@ from models.Cliente import Cliente
 
 
 class LoginFrame(tk.Frame):
-    def __init__(self, master=None):
-        super().__init__(master)
-        self.master = master
-        self.pack()
+    def __init__(self, parent, app):
+        super().__init__(parent)
+        self.app = app
         self.cliente_controler = ClienteControler()
         self.cliente = None
         self.create_widgets()
@@ -35,20 +34,20 @@ class LoginFrame(tk.Frame):
         self.botao_registrar.pack(pady=10)
 
     def abrir_registro(self):
-        Registrar()
+        Registrar(self)
 
     def verificar_login(self):
         usuario = self.entry_usuario.get()
         senha = self.entry_senha.get()
 
         if usuario == "admin" and senha == "admin":
-            self.master.abrir_sistema_admin()
+            self.app.abrir_sistema_admin()
             return
 
         cliente = self.cliente_controler.buscar_cliente_por_nome(usuario)
         if cliente is not None and cliente.senha == senha:
             self.cliente = cliente
-            self.master.abrir_sistema_usuario()
+            self.app.abrir_sistema_usuario()
         else:
             self.label_erro.config(text="Usuário ou senha incorretos.")
 
