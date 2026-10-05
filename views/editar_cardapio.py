@@ -4,6 +4,7 @@ from datetime import date, datetime
 from controler.cardapio_controler import CardapioControler
 from controler.itens_cardapio_controler import ItensCardapioControler
 from models.Cardapio import Cardapio
+from views.tabela import Tabela
 
 
 class ListaCardapios(tk.Frame):
@@ -11,47 +12,73 @@ class ListaCardapios(tk.Frame):
         super().__init__(parent)
         self.app = app
         self.cardapio_controler = CardapioControler()
+        self.cardapios_por_iid = {}
         self.create_widgets()
 
     def create_widgets(self):
         tk.Label(self, text="Cardápios disponíveis:", font=("Arial", 10, "bold")).pack(pady=5)
 
-        self.frame_lista = tk.Frame(self)
-        self.frame_lista.pack(pady=5, fill="x")
-        self.desenhar_lista()
+        # rodapé empacotado antes da tabela para nunca sumir da tela
+        rodape = tk.Frame(self)
+        rodape.pack(side="bottom", fill="x")
 
-        botoes = tk.Frame(self)
+        self.label_erro = tk.Label(rodape, text="", fg="red")
+        self.label_erro.pack(pady=2)
+
+        botoes = tk.Frame(rodape)
         botoes.pack(pady=10)
+        tk.Button(botoes, text="Editar", command=self.abrir_editar).pack(side="left", padx=5)
+        tk.Button(botoes, text="Tornar Ativo", command=self.tornar_ativo).pack(side="left", padx=5)
         tk.Button(botoes, text="Novo Cardápio", command=self.novo_cardapio).pack(side="left", padx=5)
         tk.Button(botoes, text="Voltar", command=self.app.voltar_menu).pack(side="left", padx=5)
 
+        self.tabela = Tabela(self, [
+            ("id", "ID", 40),
+            ("versao", "Versão", 100),
+            ("data", "Data", 100),
+            ("ativo", "Ativo", 60),
+        ])
+        self.tabela.pack(fill="both", expand=True, padx=5)
+        self.desenhar_lista()
+
     def desenhar_lista(self):
-        for widget in self.frame_lista.winfo_children():
-            widget.destroy()
+        self.tabela.limpar()
+        self.cardapios_por_iid = {}
 
         ativo_id = self.cardapio_controler.get_ativo_id()
 
         for cardapio in self.cardapio_controler.listar_cardapios():
-            linha = tk.Frame(self.frame_lista)
-            linha.pack(pady=2, fill="x")
+            iid = str(cardapio.id)
+            self.cardapios_por_iid[iid] = cardapio
+            self.tabela.tree.insert(
+                "", "end", iid=iid,
+                values=(
+                    cardapio.id,
+                    f"v{cardapio.versao}",
+                    cardapio.data.strftime("%d/%m/%Y"),
+                    "Sim" if cardapio.id == ativo_id else "",
+                )
+            )
 
-            texto = f"[{cardapio.id}] v{cardapio.versao} - {cardapio.data.strftime('%d/%m/%Y')}"
-            if cardapio.id == ativo_id:
-                texto += "  (Ativo)"
-            tk.Label(linha, text=texto).pack(side="left", padx=5)
+    def _cardapio_selecionado(self):
+        iid = self.tabela.selecionado()
+        if iid is None:
+            self.label_erro.config(text="Selecione um cardápio na lista.")
+            return None
+        self.label_erro.config(text="")
+        return self.cardapios_por_iid[iid]
 
-            tk.Button(linha, text="Editar", command=lambda c=cardapio: self.abrir_editar(c)).pack(side="left", padx=2)
-
-            botao_ativo = tk.Button(linha, text="Tornar Ativo", command=lambda c=cardapio: self.tornar_ativo(c))
-            if cardapio.id == ativo_id:
-                botao_ativo.config(state="disabled")
-            botao_ativo.pack(side="left", padx=2)
-
-    def tornar_ativo(self, cardapio):
+    def tornar_ativo(self):
+        cardapio = self._cardapio_selecionado()
+        if cardapio is None:
+            return
         self.cardapio_controler.tornar_ativo(cardapio.id)
         self.desenhar_lista()
 
-    def abrir_editar(self, cardapio):
+    def abrir_editar(self):
+        cardapio = self._cardapio_selecionado()
+        if cardapio is None:
+            return
         self.app.mostrar(EditarCardapioWindow, cardapio=cardapio)
 
     def novo_cardapio(self):
@@ -66,51 +93,74 @@ class EditarCardapioWindow(tk.Frame):
         self.itens_cardapio_controler = ItensCardapioControler()
         self.cardapio = cardapio if cardapio is not None else Cardapio(id=None, data=date.today(), versao="")
         self.eh_novo = cardapio is None
+        self.itens_por_iid = {}
         self.create_widgets()
 
     def create_widgets(self):
         titulo = "Novo Cardápio" if self.eh_novo else "Editar Cardápio"
         tk.Label(self, text=titulo, font=("Arial", 10, "bold")).pack(pady=5)
 
-        tk.Label(self, text="Data (dd/mm/aaaa):").pack(pady=5)
+        tk.Label(self, text="Data (dd/mm/aaaa):").pack(pady=2)
         self.entry_data = tk.Entry(self)
         self.entry_data.insert(0, self.cardapio.data.strftime("%d/%m/%Y"))
-        self.entry_data.pack(pady=5)
+        self.entry_data.pack(pady=2)
 
-        tk.Label(self, text="Versão:").pack(pady=5)
+        tk.Label(self, text="Versão:").pack(pady=2)
         self.entry_versao = tk.Entry(self)
         self.entry_versao.insert(0, self.cardapio.versao)
-        self.entry_versao.pack(pady=5)
+        self.entry_versao.pack(pady=2)
 
-        tk.Label(self, text="Itens:").pack(pady=5)
-        self.frame_itens = tk.Frame(self)
-        self.frame_itens.pack(pady=5, fill="x")
-        self.desenhar_itens()
+        tk.Label(self, text="Itens:").pack(pady=2)
 
-        tk.Button(self, text="Adicionar Item Novo", command=self.adicionar_item).pack(pady=5)
+        # rodapé empacotado antes da tabela para nunca sumir da tela
+        rodape = tk.Frame(self)
+        rodape.pack(side="bottom", fill="x")
 
-        self.label_erro = tk.Label(self, text="", fg="red")
-        self.label_erro.pack(pady=5)
+        self.label_erro = tk.Label(rodape, text="", fg="red")
+        self.label_erro.pack(pady=2)
 
-        botoes = tk.Frame(self)
-        botoes.pack(pady=10)
+        botoes_item = tk.Frame(rodape)
+        botoes_item.pack(pady=5)
+        tk.Button(botoes_item, text="Adicionar Item", command=self.adicionar_item).pack(side="left", padx=3)
+        tk.Button(botoes_item, text="Editar Item", command=self.editar_item).pack(side="left", padx=3)
+        tk.Button(botoes_item, text="Remover Item", command=self.remover_item).pack(side="left", padx=3)
+
+        botoes = tk.Frame(rodape)
+        botoes.pack(pady=5)
         tk.Button(botoes, text="Salvar Cardápio", command=self.salvar).pack(side="left", padx=5)
         tk.Button(botoes, text="Voltar", command=lambda: self.app.mostrar(ListaCardapios)).pack(side="left", padx=5)
 
+        self.tabela = Tabela(self, [
+            ("id", "ID", 40),
+            ("nome", "Nome", 160),
+            ("preco", "Preço", 70),
+            ("categoria", "Categoria", 100),
+        ], height=6)
+        self.tabela.pack(fill="both", expand=True, padx=5)
+        self.desenhar_itens()
+
     def desenhar_itens(self):
-        for widget in self.frame_itens.winfo_children():
-            widget.destroy()
+        self.tabela.limpar()
+        self.itens_por_iid = {}
 
         if self.cardapio.id is None:
             return  # cardápio ainda não salvo, não tem itens pra buscar
 
         for item in self.itens_cardapio_controler.listar_por_cardapio(self.cardapio.id):
-            linha = tk.Frame(self.frame_itens)
-            linha.pack(pady=2, fill="x")
+            iid = str(item.id)
+            self.itens_por_iid[iid] = item
+            self.tabela.tree.insert(
+                "", "end", iid=iid,
+                values=(item.id, item.nome, f"R${item.preco:.2f}", item.categoria)
+            )
 
-            tk.Label(linha, text=f"[{item.id}] {item.nome} - R${item.preco:.2f} ({item.categoria})").pack(side="left", padx=5)
-            tk.Button(linha, text="Editar", command=lambda i=item: self.editar_item(i)).pack(side="left", padx=2)
-            tk.Button(linha, text="Remover", command=lambda i=item: self.remover_item(i)).pack(side="left", padx=2)
+    def _item_selecionado(self):
+        iid = self.tabela.selecionado()
+        if iid is None:
+            self.label_erro.config(text="Selecione um item na lista.")
+            return None
+        self.label_erro.config(text="")
+        return self.itens_por_iid[iid]
 
     def adicionar_item(self):
         if self.cardapio.id is None:
@@ -118,11 +168,17 @@ class EditarCardapioWindow(tk.Frame):
             return
         self.app.mostrar(NovoItemWindow, cardapio=self.cardapio)
 
-    def editar_item(self, item_cardapio):
-        self.app.mostrar(EditItemWindow, item_cardapio=item_cardapio, cardapio=self.cardapio)
+    def editar_item(self):
+        item = self._item_selecionado()
+        if item is None:
+            return
+        self.app.mostrar(EditItemWindow, item_cardapio=item, cardapio=self.cardapio)
 
-    def remover_item(self, item_cardapio):
-        self.itens_cardapio_controler.remover_item_cardapio(item_cardapio)
+    def remover_item(self):
+        item = self._item_selecionado()
+        if item is None:
+            return
+        self.itens_cardapio_controler.remover_item_cardapio(item)
         self.desenhar_itens()
 
     def salvar(self):

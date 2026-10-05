@@ -49,6 +49,7 @@ class MenuAdmin(tk.Frame):
         tk.Button(self, text="Ver pedidos", command=lambda: app.mostrar(Pedidos)).pack(pady=10)
         tk.Button(self, text="Ver cardápio", command=lambda: app.mostrar(Cardapio)).pack(pady=10)
         tk.Button(self, text="Editar cardápio", command=lambda: app.mostrar(ListaCardapios)).pack(pady=10)
+        tk.Button(self, text="Ingredientes", command=lambda: app.mostrar(ListaIngredientes)).pack(pady=10)
         tk.Button(self, text="Sair", command=app.sair).pack(pady=10)
 
 
