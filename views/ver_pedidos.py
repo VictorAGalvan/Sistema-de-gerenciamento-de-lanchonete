@@ -83,7 +83,17 @@ class DetalhesPedido(tk.Frame):
 
         rodape = tk.Frame(self)
         rodape.pack(side="bottom", fill="x")
-        tk.Button(rodape, text="Voltar", command=lambda: self.app.mostrar(Pedidos)).pack(pady=10)
+
+        botoes = tk.Frame(rodape)
+        botoes.pack(pady=10)
+        tk.Button(
+            botoes, text="Ingredientes/Obs",
+            command=lambda: self.app.mostrar(IngredientesPedido, pedido=self.pedido)
+        ).pack(side="left", padx=5)
+        tk.Button(
+            botoes, text="Voltar",
+            command=lambda: self.app.mostrar(Pedidos)
+        ).pack(side="left", padx=5)
 
         self.tabela = Tabela(self, [
             ("qtd", "Qtd", 50),
@@ -97,7 +107,6 @@ class DetalhesPedido(tk.Frame):
                 "", "end",
                 values=(item.quantidade, item.nome, f"R${item.preco:.2f}")
             )
-
 
 class MeuPedido(tk.Frame):
     def __init__(self, parent, app, cliente):
@@ -129,3 +138,34 @@ class MeuPedido(tk.Frame):
                     "", "end",
                     values=(f"#{pedido.id}", str(pedido.estado), item.quantidade, item.nome)
                 )
+class IngredientesPedido(tk.Frame):
+    def __init__(self, parent, app, pedido):
+        super().__init__(parent)
+        self.app = app
+        self.pedido = pedido
+        self.create_widgets()
+
+    def create_widgets(self):
+        tk.Label(self, text=f"Ingredientes e observações - Pedido #{self.pedido.id}").pack(pady=5)
+
+        rodape = tk.Frame(self)
+        rodape.pack(side="bottom", fill="x")
+        tk.Button(
+            rodape, text="Voltar",
+            command=lambda: self.app.mostrar(DetalhesPedido, pedido=self.pedido)
+        ).pack(pady=10)
+
+        self.tabela = Tabela(self, [
+            ("qtd", "Qtd", 40),
+            ("item", "Item", 110),
+            ("ingredientes", "Ingredientes", 180),
+            ("obs", "Observação", 150),
+        ])
+        self.tabela.pack(fill="both", expand=True, padx=5)
+
+        for item in self.pedido.itens_pedidos:
+            ingredientes = ", ".join(ing.nome for ing in item.ingredientes) or "-"
+            self.tabela.tree.insert(
+                "", "end",
+                values=(item.quantidade, item.nome, ingredientes, item.observacao or "-")
+            )

@@ -162,4 +162,4 @@ class ListaIngredientes(tk.Frame):
             )
             return
         self.desenhar_lista()
-        self.limpar()
+        self.limpar() 

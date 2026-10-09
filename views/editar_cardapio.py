@@ -6,7 +6,30 @@ from controler.itens_cardapio_controler import ItensCardapioControler
 from models.Cardapio import Cardapio
 from views.tabela import Tabela
 
+from controler.ingrediente_controler import IngredienteController
 
+
+class SeletorIngredientes(tk.Frame):
+    """Listbox de múltipla escolha com todos os ingredientes cadastrados."""
+
+    def __init__(self, parent, selecionados=()):
+        super().__init__(parent)
+        self.ingredientes = IngredienteController().select_ingrediente()
+        ids = {ing.id for ing in selecionados}
+
+        self.listbox = tk.Listbox(self, selectmode="multiple", height=5, exportselection=False)
+        barra = tk.Scrollbar(self, command=self.listbox.yview)
+        self.listbox.config(yscrollcommand=barra.set)
+        barra.pack(side="right", fill="y")
+        self.listbox.pack(side="left", fill="both", expand=True)
+
+        for i, ing in enumerate(self.ingredientes):
+            self.listbox.insert("end", ing.nome)
+            if ing.id in ids:
+                self.listbox.selection_set(i)
+
+    def selecionados(self):
+        return [self.ingredientes[i] for i in self.listbox.curselection()]
 class ListaCardapios(tk.Frame):
     def __init__(self, parent, app):
         super().__init__(parent)
@@ -132,9 +155,10 @@ class EditarCardapioWindow(tk.Frame):
 
         self.tabela = Tabela(self, [
             ("id", "ID", 40),
-            ("nome", "Nome", 160),
-            ("preco", "Preço", 70),
-            ("categoria", "Categoria", 100),
+            ("nome", "Nome", 120),
+            ("preco", "Preço", 60),
+            ("categoria", "Categoria", 90),
+            ("ingredientes", "Ingredientes", 170),
         ], height=6)
         self.tabela.pack(fill="both", expand=True, padx=5)
         self.desenhar_itens()
@@ -153,6 +177,11 @@ class EditarCardapioWindow(tk.Frame):
                 "", "end", iid=iid,
                 values=(item.id, item.nome, f"R${item.preco:.2f}", item.categoria)
             )
+        ingredientes = ", ".join(ing.nome for ing in item.ingredientes) or "-"
+        self.tabela.tree.insert(
+            "", "end", iid=iid,
+            values=(item.id, item.nome, f"R${item.preco:.2f}", item.categoria, ingredientes)
+        )
 
     def _item_selecionado(self):
         iid = self.tabela.selecionado()
@@ -210,27 +239,50 @@ class NovoItemWindow(tk.Frame):
         self.create_widgets()
 
     def create_widgets(self):
-        tk.Label(self, text="Novo Item", font=("Arial", 10, "bold")).pack(pady=5)
+        tk.Label(self, text="Novo Item", font=("Arial", 10, "bold")).pack(pady=2)
 
-        tk.Label(self, text="Nome:").pack(pady=5)
+        tk.Label(self, text="Nome:").pack(pady=2)
         self.entry_nome = tk.Entry(self)
-        self.entry_nome.pack(pady=5)
+        self.entry_nome.pack(pady=2)
 
-        tk.Label(self, text="Preço:").pack(pady=5)
+        tk.Label(self, text="Preço:").pack(pady=2)
         self.entry_preco = tk.Entry(self)
-        self.entry_preco.pack(pady=5)
+        self.entry_preco.pack(pady=2)
 
-        tk.Label(self, text="Categoria:").pack(pady=5)
+        tk.Label(self, text="Categoria:").pack(pady=2)
         self.entry_categoria = tk.Entry(self)
-        self.entry_categoria.pack(pady=5)
+        self.entry_categoria.pack(pady=2)
+
+        tk.Label(self, text="Ingredientes (clique para marcar/desmarcar):").pack(pady=2)
+        self.seletor = SeletorIngredientes(self)
+        self.seletor.pack(fill="x", padx=5)
 
         self.label_erro = tk.Label(self, text="", fg="red")
-        self.label_erro.pack(pady=5)
+        self.label_erro.pack(pady=2)
 
         botoes = tk.Frame(self)
-        botoes.pack(pady=10)
+        botoes.pack(pady=5)
         tk.Button(botoes, text="Adicionar", command=self.adicionar).pack(side="left", padx=5)
         tk.Button(botoes, text="Voltar", command=self.voltar).pack(side="left", padx=5)
+
+    def adicionar(self):
+        try:
+            preco = float(self.entry_preco.get())
+        except ValueError:
+            self.label_erro.config(text="Preço inválido.")
+            return
+
+        from models.ItensCardapio import ItensCardapio
+        novo_item = ItensCardapio(
+            id=None,
+            nome=self.entry_nome.get(),
+            preco=preco,
+            categoria=self.entry_categoria.get(),
+            ingredientes=self.seletor.selecionados(),
+            id_cardapio=self.cardapio.id
+        )
+        self.itens_cardapio_controler.criar_item_cardapio(novo_item)
+        self.voltar()
 
     def voltar(self):
         self.app.mostrar(EditarCardapioWindow, cardapio=self.cardapio)

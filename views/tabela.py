@@ -3,14 +3,6 @@ from tkinter import ttk
 
 
 class Tabela(tk.Frame):
-    """Tabela com barra de rolagem (ttk.Treeview).
-
-    colunas: lista de tuplas (id_da_coluna, titulo, largura)
-        Tabela(self, [("id", "ID", 40), ("nome", "Nome", 150)])
-
-    Use `tabela.tree` para inserir linhas:
-        tabela.tree.insert("", "end", iid="1", values=(1, "X-Burger"))
-    """
 
     def __init__(self, parent, colunas, height=8):
         super().__init__(parent)
@@ -35,6 +27,6 @@ class Tabela(tk.Frame):
         self.tree.delete(*self.tree.get_children())
 
     def selecionado(self):
-        """Devolve o iid da linha selecionada, ou None."""
+       
         sel = self.tree.selection()
         return sel[0] if sel else None
