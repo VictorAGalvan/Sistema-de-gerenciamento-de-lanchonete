@@ -3,6 +3,7 @@ from views.login import LoginFrame
 from views.cardapio_view import Cardapio
 from views.ver_pedidos import MeuPedido, Pedidos
 from views.editar_cardapio import ListaCardapios
+from views.ingredientes import ListaIngredientes
 class JanelaPrincipal(tk.Tk):
     def __init__(self):
         super().__init__()
