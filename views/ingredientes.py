@@ -39,7 +39,7 @@ class ListaIngredientes(tk.Frame):
         self.entry_unidade = tk.Entry(form, width=25)
         self.entry_unidade.grid(row=1, column=1, pady=1)
 
-        tk.Label(form, text="Quantidade:").grid(row=2, column=0, sticky="e", padx=3, pady=1)
+        tk.Label(form, text="Estoque inicial / reposição:").grid(row=2, column=0, sticky="e", padx=3, pady=1)
         self.entry_quantidade = tk.Entry(form, width=25)
         self.entry_quantidade.grid(row=2, column=1, pady=1)
 
@@ -50,6 +50,7 @@ class ListaIngredientes(tk.Frame):
         botoes.pack(pady=6)
         tk.Button(botoes, text="Adicionar", command=self.adicionar).pack(side="left", padx=2)
         tk.Button(botoes, text="Salvar", command=self.salvar).pack(side="left", padx=2)
+        tk.Button(botoes, text="Reabastecer", command=self.reabastecer).pack(side="left", padx=2)
         tk.Button(botoes, text="Remover", command=self.remover).pack(side="left", padx=2)
         tk.Button(botoes, text="Limpar", command=self.limpar).pack(side="left", padx=2)
         tk.Button(botoes, text="Voltar", command=self.app.voltar_menu).pack(side="left", padx=2)
@@ -58,7 +59,7 @@ class ListaIngredientes(tk.Frame):
             ("id", "ID", 40),
             ("nome", "Nome", 170),
             ("unidade", "Unidade", 80),
-            ("quantidade", "Quantidade", 90),
+            ("quantidade", "Estoque atual", 90),
         ], height=6)
         self.tabela.pack(fill="both", expand=True, padx=5)
         self.tabela.tree.bind("<<TreeviewSelect>>", self.ao_selecionar)
@@ -83,7 +84,7 @@ class ListaIngredientes(tk.Frame):
         if iid is None:
             return
         ing = self.ingredientes_por_iid[iid]
-        self._preencher_formulario(ing.nome, ing.unidade, ing.quantidade)
+        self._preencher_formulario(ing.nome, ing.unidade)
         self.label_erro.config(text="")
 
     def _preencher_formulario(self, nome="", unidade="", quantidade=""):
@@ -129,13 +130,31 @@ class ListaIngredientes(tk.Frame):
         ingrediente = self._ingrediente_selecionado()
         if ingrediente is None:
             return
-        dados = self._ler_formulario()
-        if dados is None:
-            return
 
-        self.controller.salvar(ingrediente, dados)
+        nome = self.entry_nome.get().strip()
+        unidade = self.entry_unidade.get().strip()
+        if not nome or not unidade:
+            self.label_erro.config(text="Preencha nome e unidade.")
+            return
+        self.controller.salvar(ingrediente, nome, unidade)
         self.desenhar_lista()
         self.limpar()
+
+    def reabastecer(self):
+        ingrediente = self._ingrediente_selecionado()
+        if ingrediente is None:
+            return
+        quantidade, erro = self.controller.validar_reposicao(
+            self.entry_quantidade.get()
+        )
+        if erro:
+            self.label_erro.config(text=erro)
+            return
+
+        self.controller.restock(ingrediente, quantidade)
+        self.desenhar_lista()
+        self.limpar()
+        self.label_erro.config(text=f"Estoque de {ingrediente.nome} reabastecido.")
 
     def remover(self):
         ingrediente = self._ingrediente_selecionado()

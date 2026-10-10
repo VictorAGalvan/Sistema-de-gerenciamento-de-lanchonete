@@ -68,6 +68,20 @@ class IngredienteDAO:
                 },
             )
 
+    def restock(self, id_ingrediente: int, quantidade: int):
+        with engine.begin() as connection:
+            resultado = connection.execute(
+                text("""
+                    UPDATE Ingredientes
+                    SET quantidade = quantidade + :quantidade
+                    WHERE id = :id
+                    RETURNING id
+                """),
+                {"id": id_ingrediente, "quantidade": quantidade},
+            )
+            if resultado.scalar() is None:
+                raise LookupError(f"Ingrediente {id_ingrediente} não encontrado.")
+
     def delete(self, ingrediente: Ingrediente):
         with engine.begin() as connection:
 

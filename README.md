@@ -44,8 +44,11 @@ As duas implementações expõem os mesmos métodos. Isso permite trocar de uma 
 4. Ao clicar em "Fazer Pedido":
    - Se o acesso for de admin/garçom, o sistema pede o número da mesa.
    - Se o acesso for de cliente autenticado, o sistema usa o cliente logado, sem pedir mesa.
-5. O `CardapioViewController` valida os dados do pedido e usa a `PedidoFactory` para instanciar `PedidoMesa` ou `PedidoCliente`.
-6. O `PedidoControler` grava o pedido e os itens no banco, através do `PedidoDAO`.
+5. Ingredientes e observações podem ser personalizados enquanto o pedido está no carrinho. Depois de criado, o pedido não pode mais ser editado.
+6. O `PedidoDAO` confere e desconta uma unidade de cada ingrediente mantido, por porção, na mesma transação que grava o pedido. Se faltar estoque, o pedido não é criado.
+7. O `CardapioViewController` usa a `PedidoFactory` para instanciar `PedidoMesa` ou `PedidoCliente`, e o `PedidoControler` delega a gravação ao `PedidoDAO`.
+
+Na tela de ingredientes, "Reabastecer" soma uma quantidade inteira positiva ao estoque atual; editar o cadastro do ingrediente altera apenas o nome e a unidade. A quantidade consumida por receita é uma unidade por ingrediente selecionado em cada porção.
 ### 3.2. Ver Pedidos → Avançar estado
  
 1. A tela `Pedidos` lista, via `PedidoControler`, todos os pedidos cujo estado ainda não é "Pronto".

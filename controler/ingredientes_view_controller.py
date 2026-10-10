@@ -20,9 +20,11 @@ class IngredientesViewController:
         if not nome or not unidade or not texto_quantidade:
             return None, "Preencha nome, unidade e quantidade."
         try:
-            quantidade = float(texto_quantidade)
+            quantidade = int(texto_quantidade)
         except ValueError:
-            return None, "Quantidade inválida."
+            return None, "A quantidade em estoque deve ser um número inteiro."
+        if quantidade < 0:
+            return None, "A quantidade em estoque não pode ser negativa."
         return (nome, unidade, quantidade), None
 
     def adicionar(self, dados):
@@ -31,9 +33,23 @@ class IngredientesViewController:
             Ingrediente(id=None, nome=nome, unidade=unidade, quantidade=quantidade)
         )
 
-    def salvar(self, ingrediente, dados):
-        ingrediente.nome, ingrediente.unidade, ingrediente.quantidade = dados
+    def salvar(self, ingrediente, nome, unidade):
+        ingrediente.nome = nome
+        ingrediente.unidade = unidade
         self.ingredientes.update_ingrediente(ingrediente)
+
+    @staticmethod
+    def validar_reposicao(texto_quantidade):
+        try:
+            quantidade = int(texto_quantidade.strip())
+        except ValueError:
+            return None, "Informe uma quantidade inteira para reabastecer."
+        if quantidade <= 0:
+            return None, "A quantidade para reabastecer deve ser maior que zero."
+        return quantidade, None
+
+    def restock(self, ingrediente, quantidade):
+        self.ingredientes.restock_ingrediente(ingrediente.id, quantidade)
 
     def remover(self, ingrediente):
         try:

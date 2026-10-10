@@ -6,6 +6,7 @@ from models.PedidoMesa import PedidoMesa
 from models.PedidoCliente import PedidoCliente
 from models.Cliente import Cliente
 from models.EstadoPedido import Recebido, NaFila, EmPreparo, Pronto
+from models.EstoqueInsuficienteError import EstoqueInsuficienteError
 
 
 ESTADOS_CHAR = {"Recebido": "R", "Na Fila": "N", "Em Preparo": "E", "Pronto": "P"}
@@ -71,6 +72,49 @@ class PedidoDAO:
         mesa = getattr(pedido, "mesa", None)
 
         with engine.begin() as connection:
+            consumo_por_ingrediente = {}
+            for item in pedido.itens_pedidos:
+                for ingrediente in item.ingredientes:
+                    consumo_por_ingrediente[ingrediente.id] = (
+                        consumo_por_ingrediente.get(ingrediente.id, 0)
+                        + item.quantidade
+                    )
+
+            ingredientes_bloqueados = {}
+            for id_ingrediente in sorted(consumo_por_ingrediente):
+                ingrediente = connection.execute(
+                    text("""
+                        SELECT nome, quantidade
+                        FROM ingredientes
+                        WHERE id = :id
+                        FOR UPDATE
+                    """),
+                    {"id": id_ingrediente},
+                ).fetchone()
+                if ingrediente is None:
+                    raise EstoqueInsuficienteError(
+                        f"Ingrediente {id_ingrediente} não está mais cadastrado."
+                    )
+                ingredientes_bloqueados[id_ingrediente] = ingrediente
+
+            for id_ingrediente, consumo in consumo_por_ingrediente.items():
+                ingrediente = ingredientes_bloqueados[id_ingrediente]
+                if ingrediente.quantidade < consumo:
+                    raise EstoqueInsuficienteError(
+                        f"Estoque insuficiente de {ingrediente.nome}: "
+                        f"disponível {ingrediente.quantidade}, necessário {consumo}."
+                    )
+
+            for id_ingrediente, consumo in consumo_por_ingrediente.items():
+                connection.execute(
+                    text("""
+                        UPDATE ingredientes
+                        SET quantidade = quantidade - :consumo
+                        WHERE id = :id
+                    """),
+                    {"id": id_ingrediente, "consumo": consumo},
+                )
+
             resultado = connection.execute(
                 text("""
                     INSERT INTO pedidos (idclientes, mesa, estado)

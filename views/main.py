@@ -1,4 +1,6 @@
 import tkinter as tk
+from tkinter import ttk
+
 from controler.app_controller import AppController
 from views.login import LoginFrame
 from views.cardapio_view import Cardapio
@@ -8,11 +10,51 @@ from views.ingredientes import ListaIngredientes
 class JanelaPrincipal(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Sistema de Pedidos")
-        self.geometry("500x500")
+        self.title("Lanchonete")
+        self.geometry("760x620")
+        self.minsize(620, 480)
+        self.configure(bg="#f3f5f7")
+        self.option_add("*Font", ("Segoe UI", 10))
+        self.option_add("*Background", "#f3f5f7")
+        self.option_add("*Foreground", "#263238")
+        self.option_add("*Button.Background", "#e5eaf0")
+        self.option_add("*Button.ActiveBackground", "#d5e2dc")
+        self.option_add("*Button.Relief", "flat")
+        self.option_add("*Button.BorderWidth", 0)
+        self.option_add("*Button.Padx", 12)
+        self.option_add("*Button.Pady", 6)
+        self.option_add("*Entry.Background", "#ffffff")
+        self.option_add("*Entry.Relief", "solid")
+        estilo = ttk.Style(self)
+        estilo.configure(
+            "Treeview",
+            background="#ffffff",
+            fieldbackground="#ffffff",
+            foreground="#263238",
+            rowheight=28,
+            borderwidth=0,
+        )
+        estilo.configure(
+            "Treeview.Heading",
+            background="#e5eaf0",
+            foreground="#263238",
+            font=("Segoe UI", 10, "bold"),
+            padding=6,
+        )
+        estilo.map("Treeview", background=[("selected", "#cfe3d8")])
         self.controller = AppController()
 
-        self.container = tk.Frame(self)
+        cabecalho = tk.Frame(self, bg="#31594b", padx=20, pady=12)
+        cabecalho.pack(fill="x")
+        tk.Label(
+            cabecalho,
+            text="LANCHONETE  |  SISTEMA DE PEDIDOS",
+            bg="#31594b",
+            fg="#ffffff",
+            font=("Segoe UI", 12, "bold"),
+        ).pack(anchor="w")
+
+        self.container = tk.Frame(self, padx=14, pady=14)
         self.container.pack(fill="both", expand=True)
 
         self.frame_atual = None
@@ -51,21 +93,29 @@ class JanelaPrincipal(tk.Tk):
 class MenuAdmin(tk.Frame):
     def __init__(self, parent, app):
         super().__init__(parent)
-        tk.Button(self, text="Ver pedidos", command=lambda: app.mostrar(Pedidos)).pack(pady=10)
-        tk.Button(self, text="Ver cardápio", command=lambda: app.mostrar(Cardapio)).pack(pady=10)
-        tk.Button(self, text="Editar cardápio", command=lambda: app.mostrar(ListaCardapios)).pack(pady=10)
-        tk.Button(self, text="Ingredientes", command=lambda: app.mostrar(ListaIngredientes)).pack(pady=10)
-        tk.Button(self, text="Sair", command=app.sair).pack(pady=10)
+        tk.Label(self, text="Painel administrativo", font=("Segoe UI", 16, "bold")).pack(pady=(20, 12))
+        tk.Button(self, text="Ver pedidos", command=lambda: app.mostrar(Pedidos)).pack(pady=6)
+        tk.Button(self, text="Ver cardápio", command=lambda: app.mostrar(Cardapio)).pack(pady=6)
+        tk.Button(self, text="Editar cardápio", command=lambda: app.mostrar(ListaCardapios)).pack(pady=6)
+        tk.Button(self, text="Ingredientes e estoque", command=lambda: app.mostrar(ListaIngredientes)).pack(pady=6)
+        tk.Button(self, text="Sair", command=app.sair).pack(pady=(18, 6))
 
 
 class MenuUsuario(tk.Frame):
     def __init__(self, parent, app):
         super().__init__(parent)
-        tk.Button(self, text="Ver cardápio",
-                  command=lambda: app.mostrar(Cardapio, cliente=app.cliente)).pack(pady=10)
-        tk.Button(self, text="Meu pedido",
-                  command=lambda: app.mostrar(MeuPedido, cliente=app.cliente)).pack(pady=10)
-        tk.Button(self, text="Sair", command=app.sair).pack(pady=10)
+        tk.Label(self, text="Bem-vindo!", font=("Segoe UI", 16, "bold")).pack(pady=(20, 12))
+        tk.Button(
+            self,
+            text="Ver cardápio e montar pedido",
+            command=lambda: app.mostrar(Cardapio, cliente=app.cliente),
+        ).pack(pady=6)
+        tk.Button(
+            self,
+            text="Meus pedidos",
+            command=lambda: app.mostrar(MeuPedido, cliente=app.cliente),
+        ).pack(pady=6)
+        tk.Button(self, text="Sair", command=app.sair).pack(pady=(18, 6))
 
 if __name__ == "__main__":
     app = JanelaPrincipal()

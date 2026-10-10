@@ -10,6 +10,7 @@ class Cardapio(tk.Frame):
         self.cliente = cliente
         self.controller = CardapioViewController(cliente)
         self.itens_por_iid = {}
+        self.label_carrinho = None
         self.create_widgets()
 
     def _item_selecionado(self):
@@ -22,6 +23,18 @@ class Cardapio(tk.Frame):
 
     def _atualizar_qtd(self, item_cardapio, quantidade):
         self.tabela.tree.set(str(item_cardapio.id), "qtd", quantidade)
+        self._atualizar_resumo_carrinho()
+
+    def _atualizar_resumo_carrinho(self):
+        if self.label_carrinho is None:
+            return
+        total_itens = sum(item.quantidade for item in self.controller.carrinho)
+        total_preco = sum(
+            item.preco * item.quantidade for item in self.controller.carrinho
+        )
+        self.label_carrinho.config(
+            text=f"Carrinho: {total_itens} item(ns)  |  Total: R$ {total_preco:.2f}"
+        )
 
     def adicionar_ao_pedido(self):
         item_cardapio = self._item_selecionado()
@@ -48,7 +61,13 @@ class Cardapio(tk.Frame):
 
 
     def create_widgets(self):
-        tk.Label(self, text="Bem-vindo ao Cardápio!").pack(pady=5)
+        tk.Label(self, text="Cardápio", font=("Segoe UI", 16, "bold")).pack(pady=5)
+        tk.Label(
+            self,
+            text="Selecione um item e use + / - para ajustar a quantidade.",
+        ).pack(pady=2)
+        self.label_carrinho = tk.Label(self, text="Carrinho: 0 item(ns)  |  Total: R$ 0.00")
+        self.label_carrinho.pack(pady=4)
 
 
         rodape = tk.Frame(self)
@@ -98,9 +117,6 @@ class Cardapio(tk.Frame):
             return
         self.app.voltar_menu()
 
-
-# Popup mantido como Toplevel de propósito: edita o item_pedido que está
-# dentro do carrinho do Frame Cardapio, e trocar de tela perderia o carrinho.
 class ItensDetail(tk.Toplevel):
     def __init__(self, item_cardapio, item_pedido, master=None):
         super().__init__(master)
@@ -114,7 +130,12 @@ class ItensDetail(tk.Toplevel):
     def create_widgets(self):
         tk.Label(self, text=f"Nome: {self.item_pedido.nome}").pack(pady=5)
         tk.Label(self, text=f"Preço: R${self.item_pedido.preco:.2f}").pack(pady=5)
-        tk.Label(self, text="Ingredientes (clique para marcar/desmarcar):").pack(pady=5)
+        tk.Label(
+            self,
+            text="Personalize antes de enviar o pedido. Depois, não será possível editar.",
+            wraplength=280,
+        ).pack(pady=5)
+        tk.Label(self, text="Ingredientes (marque os que deseja manter):").pack(pady=5)
 
         rodape = tk.Frame(self)
         rodape.pack(side="bottom", fill="x")
@@ -125,7 +146,6 @@ class ItensDetail(tk.Toplevel):
         self.entry_observacao.pack(pady=5)
         tk.Button(rodape, text="Salvar", command=self.salvar).pack(pady=10)
 
-        # Listbox em modo "multiple": cada clique marca/desmarca um ingrediente
         frame_lista = tk.Frame(self)
         frame_lista.pack(fill="both", expand=True, padx=5)
 

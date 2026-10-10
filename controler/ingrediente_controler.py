@@ -15,6 +15,9 @@ class IngredienteController:
     def update_ingrediente(self, ingrediente):
         return self.dao.update(ingrediente)
 
+    def restock_ingrediente(self, id_ingrediente, quantidade):
+        return self.dao.restock(id_ingrediente, quantidade)
+
     def delete_ingrediente(self, ingrediente):
         return self.dao.delete(ingrediente)
 

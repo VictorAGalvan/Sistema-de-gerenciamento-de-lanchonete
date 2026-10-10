@@ -2,6 +2,7 @@ from controler.cardapio_controler import CardapioControler
 from controler.itens_cardapio_controler import ItensCardapioControler
 from controler.pedido_controler import PedidoControler
 from factory.PedidoFactory import PedidoFactory
+from models.EstoqueInsuficienteError import EstoqueInsuficienteError
 from models.ItensPedido import ItensPedido
 
 
@@ -72,5 +73,8 @@ class CardapioViewController:
                 None, self.cliente, self.carrinho
             )
 
-        self.pedidos.criar_pedido(novo_pedido)
+        try:
+            self.pedidos.criar_pedido(novo_pedido)
+        except EstoqueInsuficienteError as erro:
+            return str(erro)
         return None
