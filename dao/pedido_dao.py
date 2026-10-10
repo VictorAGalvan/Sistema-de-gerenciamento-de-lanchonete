@@ -78,6 +78,7 @@ class PedidoDAO:
                     consumo_por_ingrediente[ingrediente.id] = (
                         consumo_por_ingrediente.get(ingrediente.id, 0)
                         + item.quantidade
+                        * item.quantidades_ingredientes.get(ingrediente.id, 1)
                     )
 
             ingredientes_bloqueados = {}
@@ -148,10 +149,17 @@ class PedidoDAO:
                 for ingrediente in item.ingredientes:
                     connection.execute(
                         text("""
-                            INSERT INTO itemIngredienteItensPedido (iditensPedido, idingredientes)
-                            VALUES (:id_item_pedido, :id_ingrediente)
+                            INSERT INTO itemIngredienteItensPedido
+                                (iditensPedido, idingredientes, quantidade)
+                            VALUES (:id_item_pedido, :id_ingrediente, :quantidade)
                         """),
-                        {"id_item_pedido": id_item_pedido, "id_ingrediente": ingrediente.id},
+                        {
+                            "id_item_pedido": id_item_pedido,
+                            "id_ingrediente": ingrediente.id,
+                            "quantidade": item.quantidades_ingredientes.get(
+                                ingrediente.id, 1
+                            ),
+                        },
                     )
 
     def update(self, pedido):

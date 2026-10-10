@@ -52,7 +52,8 @@ CREATE TABLE itemIngredienteCardapio (
 CREATE TABLE itemIngredienteItensPedido (
        id            SERIAL PRIMARY KEY,
        iditensPedido INT    NOT NULL,
-       idingredientes INT   NOT NULL
+       idingredientes INT   NOT NULL,
+       quantidade    INT    NOT NULL DEFAULT 1
 );
 
 ALTER TABLE pedidos

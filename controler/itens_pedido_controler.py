@@ -14,13 +14,21 @@ class ItensPedidoControler:
     def criar_item_pedido(self, item):
         self.dao.insert(item)
         for ingrediente in item.ingredientes:
-            self.dao.insertIngrediente(item.id, ingrediente.id)
+            self.dao.insertIngrediente(
+                item.id,
+                ingrediente.id,
+                item.quantidades_ingredientes.get(ingrediente.id, 1),
+            )
 
     def editar_item_pedido(self, item):
         self.dao.update(item)
         self.dao.deleteIngredientes(item.id)
         for ingrediente in item.ingredientes:
-            self.dao.insertIngrediente(item.id, ingrediente.id)
+            self.dao.insertIngrediente(
+                item.id,
+                ingrediente.id,
+                item.quantidades_ingredientes.get(ingrediente.id, 1),
+            )
 
     def remover_item_pedido(self, item):
         self.dao.deleteIngredientes(item.id)
