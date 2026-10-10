@@ -18,8 +18,8 @@ O projeto tenta replicar as ideias do MVC (Model-View-Controller) dentro de uma 
  
 As camadas são:
  
-- **Views** (`views/`): telas Tkinter. Cada tela cria widgets e chama métodos de um Controller. Não acessam o banco diretamente.
-- **Controllers** (`controler/`): fazem a ponte entre a View e o DAO. Concentram validação de entrada (ex.: conversão de texto para número, checagem de campos obrigatórios) antes de repassar ao DAO.
+- **Views** (`views/`): telas Tkinter. Criam os widgets, coletam entradas, exibem erros e resultados e encaminham eventos aos controllers de fluxo. Não acessam o banco nem aplicam regras de negócio diretamente.
+- **Controllers** (`controler/`): fazem a ponte entre View, Model e DAO. Os controllers de fluxo (`login_controller.py`, `cardapio_view_controller.py`, `pedidos_view_controller.py`, `ingredientes_view_controller.py`, `cardapio_admin_controller.py` e `app_controller.py`) concentram validações, regras de negócio, navegação de sessão e operações do caso de uso; os controllers existentes por entidade encaminham as operações aos DAOs.
 - **Models** (`models/`): classes de domínio puras (Pedido, ItensCardapio, Cliente, etc.), sem lógica de acesso a dados.
 - **DAOs** (`dao/`): responsáveis pela leitura e escrita, seja em banco SQL, seja em memória (mock).
 Essa divisão não é o MVC "de livro" (não há notificação automática de eventos entre Model e View, por exemplo). É uma arquitetura em camadas que reaproveita a separação de responsabilidades do MVC: Model guarda o estado do domínio, View mostra e recebe entrada do usuário, Controller decide o que fazer.
@@ -38,13 +38,13 @@ As duas implementações expõem os mesmos métodos. Isso permite trocar de uma 
  
 ### 3.1. Ver Cardápio → Fazer Pedido
  
-1. A tela `Cardapio` (view) busca, via `ItensCardapioControler`, os itens do cardápio marcado como ativo.
+1. A tela `Cardapio` solicita ao `CardapioViewController` os itens do cardápio marcado como ativo.
 2. O usuário escolhe quantidade de cada item, com botões "+" e "-".
 3. Ao clicar em "Info", abre-se `ItensDetail`, onde o usuário marca quais ingredientes quer manter (desmarcando os que não quer) e escreve uma observação.
 4. Ao clicar em "Fazer Pedido":
    - Se o acesso for de admin/garçom, o sistema pede o número da mesa.
    - Se o acesso for de cliente autenticado, o sistema usa o cliente logado, sem pedir mesa.
-5. A `PedidoFactory` decide qual subclasse de `Pedido` instanciar: `PedidoMesa` ou `PedidoCliente`.
+5. O `CardapioViewController` valida os dados do pedido e usa a `PedidoFactory` para instanciar `PedidoMesa` ou `PedidoCliente`.
 6. O `PedidoControler` grava o pedido e os itens no banco, através do `PedidoDAO`.
 ### 3.2. Ver Pedidos → Avançar estado
  

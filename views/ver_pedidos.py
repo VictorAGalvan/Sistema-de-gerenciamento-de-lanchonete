@@ -1,6 +1,5 @@
 import tkinter as tk
-from controler.pedido_controler import PedidoControler
-from models.EstadoPedido import Pronto
+from controler.pedidos_view_controller import PedidosViewController
 from views.tabela import Tabela
 
 
@@ -8,7 +7,7 @@ class Pedidos(tk.Frame):
     def __init__(self, parent, app):
         super().__init__(parent)
         self.app = app
-        self.pedido_controler = PedidoControler()
+        self.controller = PedidosViewController()
         self.pedidos_por_iid = {}
         self.create_widgets()
 
@@ -35,10 +34,10 @@ class Pedidos(tk.Frame):
         ])
         self.tabela.pack(fill="both", expand=True, padx=5)
 
-        for pedido in self.pedido_controler.listar_nao_finalizados():
+        for pedido in self.controller.listar_nao_finalizados():
             iid = str(pedido.id)
             self.pedidos_por_iid[iid] = pedido
-            total = sum(ip.preco * ip.quantidade for ip in pedido.itens_pedidos)
+            total = self.controller.calcular_total(pedido)
             self.tabela.tree.insert(
                 "", "end", iid=iid,
                 values=(f"#{pedido.id}", f"R${total:.2f}", str(pedido.estado))
@@ -56,15 +55,14 @@ class Pedidos(tk.Frame):
         iid, pedido = self._pedido_selecionado()
         if pedido is None:
             return
-        if isinstance(pedido.estado, Pronto):
-            self.label_erro.config(text="Este pedido já está pronto.")
+        erro = self.controller.avancar_pedido(pedido)
+        if erro:
+            self.label_erro.config(text=erro)
             return
-
-        self.pedido_controler.avancar_pedido(pedido)
         self.tabela.tree.set(iid, "estado", str(pedido.estado))
 
     def abrir_detalhes(self):
-        iid, pedido = self._pedido_selecionado()
+        _, pedido = self._pedido_selecionado()
         if pedido is None:
             return
         self.app.mostrar(DetalhesPedido, pedido=pedido)
@@ -112,7 +110,7 @@ class MeuPedido(tk.Frame):
     def __init__(self, parent, app, cliente):
         super().__init__(parent)
         self.app = app
-        self.pedido_controler = PedidoControler()
+        self.controller = PedidosViewController()
         self.cliente = cliente
         self.create_widgets()
 
@@ -132,7 +130,7 @@ class MeuPedido(tk.Frame):
         self.tabela.pack(fill="both", expand=True, padx=5)
 
         # uma linha por item; o número e o estado do pedido se repetem
-        for pedido in self.pedido_controler.listar_por_cliente(self.cliente.id):
+        for pedido in self.controller.listar_por_cliente(self.cliente):
             for item in pedido.itens_pedidos:
                 self.tabela.tree.insert(
                     "", "end",
@@ -143,6 +141,7 @@ class IngredientesPedido(tk.Frame):
         super().__init__(parent)
         self.app = app
         self.pedido = pedido
+        self.controller = PedidosViewController()
         self.create_widgets()
 
     def create_widgets(self):
@@ -164,8 +163,8 @@ class IngredientesPedido(tk.Frame):
         self.tabela.pack(fill="both", expand=True, padx=5)
 
         for item in self.pedido.itens_pedidos:
-            ingredientes = ", ".join(ing.nome for ing in item.ingredientes) or "-"
+            ingredientes, observacao = self.controller.ingredientes_e_observacao(item)
             self.tabela.tree.insert(
                 "", "end",
-                values=(item.quantidade, item.nome, ingredientes, item.observacao or "-")
+                values=(item.quantidade, item.nome, ingredientes, observacao)
             )

@@ -1,13 +1,12 @@
 import tkinter as tk
-from controler.cliente_controler import ClienteControler
-from models.Cliente import Cliente
+from controler.login_controller import LoginController
 
 
 class LoginFrame(tk.Frame):
     def __init__(self, parent, app):
         super().__init__(parent)
         self.app = app
-        self.cliente_controler = ClienteControler()
+        self.controller = LoginController()
         self.cliente = None
         self.create_widgets()
 
@@ -34,18 +33,18 @@ class LoginFrame(tk.Frame):
         self.botao_registrar.pack(pady=10)
 
     def abrir_registro(self):
-        Registrar(self)
+        Registrar(self, self.controller)
 
     def verificar_login(self):
         usuario = self.entry_usuario.get()
         senha = self.entry_senha.get()
 
-        if usuario == "admin" and senha == "admin":
+        cliente, perfil = self.controller.autenticar(usuario, senha)
+        if perfil == "admin":
             self.app.abrir_sistema_admin()
             return
 
-        cliente = self.cliente_controler.buscar_cliente_por_nome(usuario)
-        if cliente is not None and cliente.senha == senha:
+        if perfil == "usuario":
             self.cliente = cliente
             self.app.abrir_sistema_usuario()
         else:
@@ -53,11 +52,11 @@ class LoginFrame(tk.Frame):
 
 
 class Registrar(tk.Toplevel):
-    def __init__(self, master=None):
+    def __init__(self, master=None, controller=None):
         super().__init__(master)
         self.title("Registrar")
         self.geometry("300x200")
-        self.cliente_controler = ClienteControler()
+        self.controller = controller or LoginController()
         self.create_widgets()
 
     def create_widgets(self):
@@ -97,14 +96,8 @@ class Registrar(tk.Toplevel):
         cpf = self.entry_cpf.get()
         telefone = self.entry_telefone.get()
 
-        if not nome or not senha:
-            self.label_erro.config(text="Nome e senha são obrigatórios.")
+        erro = self.controller.registrar(nome, senha, cpf, telefone)
+        if erro:
+            self.label_erro.config(text=erro)
             return
-
-        if self.cliente_controler.buscar_cliente_por_nome(nome):
-            self.label_erro.config(text="Nome de usuário já existe.")
-            return
-
-        novo_cliente = Cliente(id=None, nome=nome, senha=senha, cpf=cpf, telefone=telefone)
-        self.cliente_controler.criar_cliente(novo_cliente)
         self.destroy()

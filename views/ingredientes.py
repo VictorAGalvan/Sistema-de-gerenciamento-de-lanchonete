@@ -1,7 +1,6 @@
 import tkinter as tk
 
-from controler.ingrediente_controler import IngredienteController
-from models.Ingrediente import Ingrediente
+from controler.ingredientes_view_controller import IngredientesViewController
 from views.tabela import Tabela
 
 
@@ -18,7 +17,7 @@ class ListaIngredientes(tk.Frame):
     def __init__(self, parent, app):
         super().__init__(parent)
         self.app = app
-        self.controller = IngredienteController()
+        self.controller = IngredientesViewController()
         self.ingredientes_por_iid = {}
         self.create_widgets()
 
@@ -71,7 +70,7 @@ class ListaIngredientes(tk.Frame):
         self.tabela.limpar()
         self.ingredientes_por_iid = {}
 
-        for ing in self.controller.select_ingrediente():
+        for ing in self.controller.listar():
             iid = str(ing.id)
             self.ingredientes_por_iid[iid] = ing
             self.tabela.tree.insert(
@@ -102,19 +101,13 @@ class ListaIngredientes(tk.Frame):
         self.label_erro.config(text="")
 
     def _ler_formulario(self):
-        nome = self.entry_nome.get().strip()
-        unidade = self.entry_unidade.get().strip()
-        texto_qtd = self.entry_quantidade.get().strip().replace(",", ".")
-
-        if not nome or not unidade or not texto_qtd:
-            self.label_erro.config(text="Preencha nome, unidade e quantidade.")
-            return None
-        try:
-            quantidade = float(texto_qtd)
-        except ValueError:
-            self.label_erro.config(text="Quantidade inválida.")
-            return None
-        return nome, unidade, quantidade
+        dados, erro = self.controller.validar_dados(
+            self.entry_nome.get(),
+            self.entry_unidade.get(),
+            self.entry_quantidade.get(),
+        )
+        self.label_erro.config(text=erro or "")
+        return dados
 
     def _ingrediente_selecionado(self):
         iid = self.tabela.selecionado()
@@ -128,11 +121,7 @@ class ListaIngredientes(tk.Frame):
         dados = self._ler_formulario()
         if dados is None:
             return
-        nome, unidade, quantidade = dados
-
-        self.controller.insert_ingrediente(
-            Ingrediente(id=None, nome=nome, unidade=unidade, quantidade=quantidade)
-        )
+        self.controller.adicionar(dados)
         self.desenhar_lista()
         self.limpar()
 
@@ -144,8 +133,7 @@ class ListaIngredientes(tk.Frame):
         if dados is None:
             return
 
-        ingrediente.nome, ingrediente.unidade, ingrediente.quantidade = dados
-        self.controller.update_ingrediente(ingrediente)
+        self.controller.salvar(ingrediente, dados)
         self.desenhar_lista()
         self.limpar()
 
@@ -154,12 +142,9 @@ class ListaIngredientes(tk.Frame):
         if ingrediente is None:
             return
 
-        try:
-            self.controller.delete_ingrediente(ingrediente)
-        except Exception:
-            self.label_erro.config(
-                text="Não foi possível remover: o ingrediente está em uso por algum item."
-            )
+        erro = self.controller.remover(ingrediente)
+        if erro:
+            self.label_erro.config(text=erro)
             return
         self.desenhar_lista()
         self.limpar() 

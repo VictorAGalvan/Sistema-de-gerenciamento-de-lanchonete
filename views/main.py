@@ -1,4 +1,5 @@
 import tkinter as tk
+from controler.app_controller import AppController
 from views.login import LoginFrame
 from views.cardapio_view import Cardapio
 from views.ver_pedidos import MeuPedido, Pedidos
@@ -9,8 +10,7 @@ class JanelaPrincipal(tk.Tk):
         super().__init__()
         self.title("Sistema de Pedidos")
         self.geometry("500x500")
-        self.cliente = None
-        self.eh_admin = False
+        self.controller = AppController()
 
         self.container = tk.Frame(self)
         self.container.pack(fill="both", expand=True)
@@ -25,23 +25,27 @@ class JanelaPrincipal(tk.Tk):
         self.frame_atual.pack(fill="both", expand=True)
 
     def abrir_sistema_admin(self):
-        self.eh_admin = True
+        self.controller.iniciar_sessao_admin()
         self.mostrar(MenuAdmin)
 
     def abrir_sistema_usuario(self):
-        self.cliente = self.frame_atual.cliente
-        self.eh_admin = False
+        self.controller.iniciar_sessao_cliente(self.frame_atual.cliente)
         self.mostrar(MenuUsuario)
 
     def voltar_menu(self):
         self.mostrar(MenuAdmin if self.eh_admin else MenuUsuario)
-    def voltar_menu(self):
-        self.mostrar(MenuAdmin if self.eh_admin else MenuUsuario)
 
     def sair(self):
-        self.cliente = None
-        self.eh_admin = False
+        self.controller.encerrar_sessao()
         self.mostrar(LoginFrame)
+
+    @property
+    def cliente(self):
+        return self.controller.cliente
+
+    @property
+    def eh_admin(self):
+        return self.controller.eh_admin
 
 
 class MenuAdmin(tk.Frame):

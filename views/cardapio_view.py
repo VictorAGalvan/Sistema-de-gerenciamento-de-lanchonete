@@ -1,10 +1,5 @@
 import tkinter as tk
-from controler.itens_cardapio_controler import ItensCardapioControler
-from controler.itens_pedido_controler import ItensPedidoControler
-from controler.pedido_controler import PedidoControler
-from factory.PedidoFactory import PedidoFactory
-from models.ItensPedido import ItensPedido
-from controler.cardapio_controler import CardapioControler
+from controler.cardapio_view_controller import CardapioViewController
 from views.tabela import Tabela
 
 
@@ -12,21 +7,10 @@ class Cardapio(tk.Frame):
     def __init__(self, parent, app, cliente=None):
         super().__init__(parent)
         self.app = app
-        self.cardapio_controler = CardapioControler()
-        self.itens_cardapio_controler = ItensCardapioControler()
-        self.itens_pedido_controler = ItensPedidoControler()
-        self.pedido_controler = PedidoControler()
         self.cliente = cliente
-        self.carrinho = []
+        self.controller = CardapioViewController(cliente)
         self.itens_por_iid = {}
         self.create_widgets()
-
-    # ---------- carrinho ----------
-    def buscar_item_carrinho(self, item_cardapio):
-        for ip in self.carrinho:
-            if ip.id == item_cardapio.id:
-                return ip
-        return None
 
     def _item_selecionado(self):
         iid = self.tabela.selecionado()
@@ -36,46 +20,30 @@ class Cardapio(tk.Frame):
         self.label_erro.config(text="")
         return self.itens_por_iid[iid]
 
-    def _atualizar_qtd(self, item_cardapio):
-        item_pedido = self.buscar_item_carrinho(item_cardapio)
-        quantidade = item_pedido.quantidade if item_pedido else 0
+    def _atualizar_qtd(self, item_cardapio, quantidade):
         self.tabela.tree.set(str(item_cardapio.id), "qtd", quantidade)
 
     def adicionar_ao_pedido(self):
         item_cardapio = self._item_selecionado()
         if item_cardapio is None:
             return
-
-        item_pedido = self.buscar_item_carrinho(item_cardapio)
-        if item_pedido is None:
-            item_pedido = ItensPedido(item_cardapio, quantidade=1)
-            self.carrinho.append(item_pedido)
-        else:
-            item_pedido.quantidade += 1
-        self._atualizar_qtd(item_cardapio)
+        quantidade = self.controller.adicionar_ao_carrinho(item_cardapio)
+        self._atualizar_qtd(item_cardapio, quantidade)
 
     def remover_do_pedido(self):
         item_cardapio = self._item_selecionado()
         if item_cardapio is None:
             return
-
-        item_pedido = self.buscar_item_carrinho(item_cardapio)
-        if item_pedido and item_pedido.quantidade > 0:
-            item_pedido.quantidade -= 1
-            if item_pedido.quantidade == 0:
-                self.carrinho.remove(item_pedido)
-        self._atualizar_qtd(item_cardapio)
+        quantidade = self.controller.remover_do_carrinho(item_cardapio)
+        self._atualizar_qtd(item_cardapio, quantidade)
 
     def abrir_detalhes(self):
         item_cardapio = self._item_selecionado()
         if item_cardapio is None:
             return
 
-        item_pedido = self.buscar_item_carrinho(item_cardapio)
-        if item_pedido is None:
-            item_pedido = ItensPedido(item_cardapio, quantidade=1)
-            self.carrinho.append(item_pedido)
-            self._atualizar_qtd(item_cardapio)
+        item_pedido = self.controller.obter_item_para_detalhes(item_cardapio)
+        self._atualizar_qtd(item_cardapio, item_pedido.quantidade)
         ItensDetail(item_cardapio, item_pedido, master=self)
 
 
@@ -114,10 +82,7 @@ class Cardapio(tk.Frame):
         ])
         self.tabela.pack(fill="both", expand=True, padx=5)
 
-        ativo_id = self.cardapio_controler.get_ativo_id()
-        itens_do_cardapio = self.itens_cardapio_controler.listar_por_cardapio(ativo_id) if ativo_id is not None else []
-
-        for item in itens_do_cardapio:
+        for item in self.controller.listar_itens_ativos():
             iid = str(item.id)
             self.itens_por_iid[iid] = item
             self.tabela.tree.insert(
@@ -126,21 +91,11 @@ class Cardapio(tk.Frame):
             )
 
     def fazer_pedido(self):
-        if not self.carrinho:
-            self.label_erro.config(text="Adicione pelo menos um item.")
+        mesa = self.entry_mesa.get() if self.cliente is None else ""
+        erro = self.controller.fazer_pedido(mesa)
+        if erro:
+            self.label_erro.config(text=erro)
             return
-
-        if self.cliente is None:
-            try:
-                mesa = int(self.entry_mesa.get())
-            except ValueError:
-                self.label_erro.config(text="Número da mesa inválido.")
-                return
-            novo_pedido = PedidoFactory.criar_pedido_mesa(None, mesa, self.carrinho)
-        else:
-            novo_pedido = PedidoFactory.criar_pedido_cliente(None, self.cliente, self.carrinho)
-
-        self.pedido_controler.criar_pedido(novo_pedido)
         self.app.voltar_menu()
 
 
@@ -186,6 +141,10 @@ class ItensDetail(tk.Toplevel):
                 self.listbox.selection_set(i)
 
     def salvar(self):
-        self.item_pedido.ingredientes = [self.ingredientes[i] for i in self.listbox.curselection()]
-        self.item_pedido.observacao = self.entry_observacao.get()
+        selecionados = [
+            self.ingredientes[i] for i in self.listbox.curselection()
+        ]
+        CardapioViewController.salvar_detalhes(
+            self.item_pedido, selecionados, self.entry_observacao.get()
+        )
         self.destroy()

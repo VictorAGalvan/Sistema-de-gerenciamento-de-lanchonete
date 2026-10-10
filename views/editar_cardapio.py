@@ -1,12 +1,8 @@
 import tkinter as tk
-from datetime import date, datetime
 
-from controler.cardapio_controler import CardapioControler
-from controler.itens_cardapio_controler import ItensCardapioControler
+from controler.cardapio_admin_controller import CardapioAdminController
 from models.Cardapio import Cardapio
 from views.tabela import Tabela
-
-from controler.ingrediente_controler import IngredienteController
 
 
 class SeletorIngredientes(tk.Frame):
@@ -14,7 +10,8 @@ class SeletorIngredientes(tk.Frame):
 
     def __init__(self, parent, selecionados=()):
         super().__init__(parent)
-        self.ingredientes = IngredienteController().select_ingrediente()
+        self.controller = CardapioAdminController()
+        self.ingredientes = self.controller.listar_ingredientes()
         ids = {ing.id for ing in selecionados}
 
         self.listbox = tk.Listbox(self, selectmode="multiple", height=5, exportselection=False)
@@ -34,7 +31,7 @@ class ListaCardapios(tk.Frame):
     def __init__(self, parent, app):
         super().__init__(parent)
         self.app = app
-        self.cardapio_controler = CardapioControler()
+        self.controller = CardapioAdminController()
         self.cardapios_por_iid = {}
         self.create_widgets()
 
@@ -68,9 +65,9 @@ class ListaCardapios(tk.Frame):
         self.tabela.limpar()
         self.cardapios_por_iid = {}
 
-        ativo_id = self.cardapio_controler.get_ativo_id()
+        cardapios, ativo_id = self.controller.listar_cardapios()
 
-        for cardapio in self.cardapio_controler.listar_cardapios():
+        for cardapio in cardapios:
             iid = str(cardapio.id)
             self.cardapios_por_iid[iid] = cardapio
             self.tabela.tree.insert(
@@ -95,7 +92,7 @@ class ListaCardapios(tk.Frame):
         cardapio = self._cardapio_selecionado()
         if cardapio is None:
             return
-        self.cardapio_controler.tornar_ativo(cardapio.id)
+        self.controller.tornar_ativo(cardapio)
         self.desenhar_lista()
 
     def abrir_editar(self):
@@ -112,9 +109,8 @@ class EditarCardapioWindow(tk.Frame):
     def __init__(self, parent, app, cardapio: Cardapio = None):
         super().__init__(parent)
         self.app = app
-        self.cardapio_controler = CardapioControler()
-        self.itens_cardapio_controler = ItensCardapioControler()
-        self.cardapio = cardapio if cardapio is not None else Cardapio(id=None, data=date.today(), versao="")
+        self.controller = CardapioAdminController()
+        self.cardapio = cardapio if cardapio is not None else self.controller.novo_cardapio()
         self.eh_novo = cardapio is None
         self.itens_por_iid = {}
         self.create_widgets()
@@ -170,18 +166,20 @@ class EditarCardapioWindow(tk.Frame):
         if self.cardapio.id is None:
             return  # cardápio ainda não salvo, não tem itens pra buscar
 
-        for item in self.itens_cardapio_controler.listar_por_cardapio(self.cardapio.id):
+        for item in self.controller.listar_itens(self.cardapio):
             iid = str(item.id)
             self.itens_por_iid[iid] = item
+            ingredientes = ", ".join(ing.nome for ing in item.ingredientes) or "-"
             self.tabela.tree.insert(
                 "", "end", iid=iid,
-                values=(item.id, item.nome, f"R${item.preco:.2f}", item.categoria)
+                values=(
+                    item.id,
+                    item.nome,
+                    f"R${item.preco:.2f}",
+                    item.categoria,
+                    ingredientes,
+                )
             )
-        ingredientes = ", ".join(ing.nome for ing in item.ingredientes) or "-"
-        self.tabela.tree.insert(
-            "", "end", iid=iid,
-            values=(item.id, item.nome, f"R${item.preco:.2f}", item.categoria, ingredientes)
-        )
 
     def _item_selecionado(self):
         iid = self.tabela.selecionado()
@@ -192,7 +190,7 @@ class EditarCardapioWindow(tk.Frame):
         return self.itens_por_iid[iid]
 
     def adicionar_item(self):
-        if self.cardapio.id is None:
+        if not self.controller.pode_adicionar_itens(self.cardapio):
             self.label_erro.config(text="Salve o cardápio antes de adicionar itens.")
             return
         self.app.mostrar(NovoItemWindow, cardapio=self.cardapio)
@@ -207,25 +205,23 @@ class EditarCardapioWindow(tk.Frame):
         item = self._item_selecionado()
         if item is None:
             return
-        self.itens_cardapio_controler.remover_item_cardapio(item)
+        self.controller.remover_item(item)
         self.desenhar_itens()
 
     def salvar(self):
-        try:
-            nova_data = datetime.strptime(self.entry_data.get(), "%d/%m/%Y").date()
-        except ValueError:
-            self.label_erro.config(text="Data inválida. Use dd/mm/aaaa.")
+        erro = self.controller.salvar_cardapio(
+            self.cardapio,
+            self.eh_novo,
+            self.entry_data.get(),
+            self.entry_versao.get(),
+        )
+        if erro:
+            self.label_erro.config(text=erro)
             return
 
-        self.cardapio.data = nova_data
-        self.cardapio.versao = self.entry_versao.get()
-
         if self.eh_novo:
-            self.cardapio_controler.criar_cardapio(self.cardapio)
             self.eh_novo = False
-            self.desenhar_itens()  # agora que tem id, permite mostrar/adicionar itens
-        else:
-            self.cardapio_controler.editar_cardapio(self.cardapio)
+            self.desenhar_itens()
 
         self.label_erro.config(text="")
 
@@ -234,7 +230,7 @@ class NovoItemWindow(tk.Frame):
     def __init__(self, parent, app, cardapio):
         super().__init__(parent)
         self.app = app
-        self.itens_cardapio_controler = ItensCardapioControler()
+        self.controller = CardapioAdminController()
         self.cardapio = cardapio
         self.create_widgets()
 
@@ -266,52 +262,27 @@ class NovoItemWindow(tk.Frame):
         tk.Button(botoes, text="Voltar", command=self.voltar).pack(side="left", padx=5)
 
     def adicionar(self):
-        try:
-            preco = float(self.entry_preco.get())
-        except ValueError:
-            self.label_erro.config(text="Preço inválido.")
+        erro = self.controller.criar_item(
+            self.cardapio,
+            self.entry_nome.get(),
+            self.entry_preco.get(),
+            self.entry_categoria.get(),
+            self.seletor.selecionados(),
+        )
+        if erro:
+            self.label_erro.config(text=erro)
             return
 
-        from models.ItensCardapio import ItensCardapio
-        novo_item = ItensCardapio(
-            id=None,
-            nome=self.entry_nome.get(),
-            preco=preco,
-            categoria=self.entry_categoria.get(),
-            ingredientes=self.seletor.selecionados(),
-            id_cardapio=self.cardapio.id
-        )
-        self.itens_cardapio_controler.criar_item_cardapio(novo_item)
         self.voltar()
 
     def voltar(self):
         self.app.mostrar(EditarCardapioWindow, cardapio=self.cardapio)
 
-    def adicionar(self):
-        try:
-            preco = float(self.entry_preco.get())
-        except ValueError:
-            self.label_erro.config(text="Preço inválido.")
-            return
-
-        from models.ItensCardapio import ItensCardapio
-        novo_item = ItensCardapio(
-            id=None,
-            nome=self.entry_nome.get(),
-            preco=preco,
-            categoria=self.entry_categoria.get(),
-            ingredientes=[],
-            id_cardapio=self.cardapio.id
-        )
-        self.itens_cardapio_controler.criar_item_cardapio(novo_item)
-        self.voltar()
-
-
 class EditItemWindow(tk.Frame):
     def __init__(self, parent, app, item_cardapio, cardapio):
         super().__init__(parent)
         self.app = app
-        self.itens_cardapio_controler = ItensCardapioControler()
+        self.controller = CardapioAdminController()
         self.item_cardapio = item_cardapio
         self.cardapio = cardapio
         self.create_widgets()
@@ -346,15 +317,13 @@ class EditItemWindow(tk.Frame):
         self.app.mostrar(EditarCardapioWindow, cardapio=self.cardapio)
 
     def salvar(self):
-        try:
-            novo_preco = float(self.entry_preco.get())
-        except ValueError:
-            self.label_erro.config(text="Preço inválido.")
+        erro = self.controller.salvar_item(
+            self.item_cardapio,
+            self.entry_nome.get(),
+            self.entry_preco.get(),
+            self.entry_categoria.get(),
+        )
+        if erro:
+            self.label_erro.config(text=erro)
             return
-
-        self.item_cardapio.nome = self.entry_nome.get()
-        self.item_cardapio.preco = novo_preco
-        self.item_cardapio.categoria = self.entry_categoria.get()
-
-        self.itens_cardapio_controler.editar_item_cardapio(self.item_cardapio)
         self.voltar()
