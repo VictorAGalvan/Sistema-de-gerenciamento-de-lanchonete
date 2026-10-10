@@ -54,9 +54,14 @@ class CardapioViewController:
         return item_pedido
 
     @staticmethod
-    def salvar_detalhes(item_pedido, ingredientes, observacao):
+    def salvar_detalhes(item_pedido, ingredientes, observacao, quantidades_ingredientes=None):
         item_pedido.ingredientes = ingredientes
         item_pedido.observacao = observacao
+        item_pedido.quantidades_ingredientes = (
+            quantidades_ingredientes
+            if quantidades_ingredientes is not None
+            else {ingrediente.id: 1 for ingrediente in ingredientes}
+        )
 
     def fazer_pedido(self, mesa_texto=""):
         if not self.carrinho:
