@@ -40,15 +40,16 @@ As duas implementações expõem os mesmos métodos. Isso permite trocar de uma 
  
 1. A tela `Cardapio` solicita ao `CardapioViewController` os itens do cardápio marcado como ativo.
 2. O usuário escolhe quantidade de cada item, com botões "+" e "-".
-3. Ao clicar em "Info", abre-se `ItensDetail`, onde o usuário marca quais ingredientes quer manter (desmarcando os que não quer) e escreve uma observação.
+3. Ao clicar em "Info", abre-se `ItensDetail`, onde o usuário marca quais ingredientes quer manter, define a quantidade de cada ingrediente e escreve uma observação.
 4. Ao clicar em "Fazer Pedido":
    - Se o acesso for de admin/garçom, o sistema pede o número da mesa.
    - Se o acesso for de cliente autenticado, o sistema usa o cliente logado, sem pedir mesa.
 5. Ingredientes e observações podem ser personalizados enquanto o pedido está no carrinho. Depois de criado, o pedido não pode mais ser editado.
-6. O `PedidoDAO` confere e desconta uma unidade de cada ingrediente mantido, por porção, na mesma transação que grava o pedido. Se faltar estoque, o pedido não é criado.
+6. O `PedidoDAO` confere e desconta do estoque a quantidade de cada ingrediente multiplicada pelo número de porções do item, na mesma transação que grava o pedido. Se faltar estoque, o pedido não é criado.
 7. O `CardapioViewController` usa a `PedidoFactory` para instanciar `PedidoMesa` ou `PedidoCliente`, e o `PedidoControler` delega a gravação ao `PedidoDAO`.
 
-Na tela de ingredientes, "Reabastecer" soma uma quantidade inteira positiva ao estoque atual; editar o cadastro do ingrediente altera apenas o nome e a unidade. A quantidade consumida por receita é uma unidade por ingrediente selecionado em cada porção.
+Na tela de ingredientes, "Reabastecer" soma uma quantidade inteira positiva ao estoque atual; editar o cadastro do ingrediente altera apenas o nome e a unidade. A quantidade por ingrediente é configurada em cada item do pedido e seu total é descontado do estoque conforme o número de porções.
+
 ### 3.2. Ver Pedidos → Avançar estado
  
 1. A tela `Pedidos` lista, via `PedidoControler`, todos os pedidos cujo estado ainda não é "Pronto".

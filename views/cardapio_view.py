@@ -1,4 +1,6 @@
 import tkinter as tk
+from tkinter import messagebox
+
 from controler.cardapio_view_controller import CardapioViewController
 from views.tabela import Tabela
 
@@ -125,6 +127,8 @@ class ItensDetail(tk.Toplevel):
         self.item_cardapio = item_cardapio
         self.item_pedido = item_pedido
         self.ingredientes = list(self.item_cardapio.ingredientes)
+        self.selecionados = {}
+        self.quantidades = {}
         self.create_widgets()
 
     def create_widgets(self):
@@ -132,10 +136,10 @@ class ItensDetail(tk.Toplevel):
         tk.Label(self, text=f"Preço: R${self.item_pedido.preco:.2f}").pack(pady=5)
         tk.Label(
             self,
-            text="Personalize antes de enviar o pedido. Depois, não será possível editar.",
+            text="Personalize os ingredientes e suas quantidades antes de enviar o pedido.",
             wraplength=280,
         ).pack(pady=5)
-        tk.Label(self, text="Ingredientes (marque os que deseja manter):").pack(pady=5)
+        tk.Label(self, text="Marque os ingredientes e ajuste a quantidade:").pack(pady=5)
 
         rodape = tk.Frame(self)
         rodape.pack(side="bottom", fill="x")
@@ -149,22 +153,85 @@ class ItensDetail(tk.Toplevel):
         frame_lista = tk.Frame(self)
         frame_lista.pack(fill="both", expand=True, padx=5)
 
-        self.listbox = tk.Listbox(frame_lista, selectmode="multiple", height=6, exportselection=False)
-        barra = tk.Scrollbar(frame_lista, command=self.listbox.yview)
-        self.listbox.config(yscrollcommand=barra.set)
+        canvas = tk.Canvas(frame_lista, highlightthickness=0)
+        barra = tk.Scrollbar(frame_lista, command=canvas.yview)
+        canvas.configure(yscrollcommand=barra.set)
         barra.pack(side="right", fill="y")
-        self.listbox.pack(side="left", fill="both", expand=True)
+        canvas.pack(side="left", fill="both", expand=True)
 
+        lista = tk.Frame(canvas)
+        janela_lista = canvas.create_window((0, 0), window=lista, anchor="nw")
+        lista.bind(
+            "<Configure>",
+            lambda evento: canvas.configure(
+                scrollregion=(0, 0, evento.width, evento.height)
+            ),
+        )
+        canvas.bind(
+            "<Configure>",
+            lambda evento: canvas.itemconfigure(janela_lista, width=evento.width),
+        )
+
+        tk.Label(lista, text="Ingrediente", anchor="w").grid(
+            row=0, column=0, sticky="ew", padx=3
+        )
+        tk.Label(lista, text="Qtd.").grid(row=0, column=1, padx=3)
         for i, ingrediente in enumerate(self.ingredientes):
-            self.listbox.insert("end", ingrediente.nome)
-            if ingrediente in self.item_pedido.ingredientes:
-                self.listbox.selection_set(i)
+            selecionado = ingrediente in self.item_pedido.ingredientes
+            self.selecionados[ingrediente.id] = tk.IntVar(
+                value=1 if selecionado else 0
+            )
+            self.quantidades[ingrediente.id] = tk.StringVar(
+                value=str(
+                    self.item_pedido.quantidades_ingredientes.get(
+                        ingrediente.id, 1
+                    )
+                )
+            )
+            tk.Checkbutton(
+                lista,
+                text=f"{ingrediente.nome} ({ingrediente.unidade})",
+                variable=self.selecionados[ingrediente.id],
+                anchor="w",
+            ).grid(row=i + 1, column=0, sticky="ew", padx=3)
+            tk.Spinbox(
+                lista,
+                from_=1,
+                to=999,
+                width=5,
+                textvariable=self.quantidades[ingrediente.id],
+            ).grid(row=i + 1, column=1, padx=3)
+        lista.columnconfigure(0, weight=1)
 
     def salvar(self):
-        selecionados = [
-            self.ingredientes[i] for i in self.listbox.curselection()
-        ]
+        selecionados = []
+        quantidades = {}
+        for ingrediente in self.ingredientes:
+            if not self.selecionados[ingrediente.id].get():
+                continue
+            try:
+                quantidade = int(self.quantidades[ingrediente.id].get())
+            except ValueError:
+                messagebox.showerror(
+                    "Quantidade inválida",
+                    f"Informe uma quantidade inteira para {ingrediente.nome}.",
+                    parent=self,
+                )
+                return
+            if quantidade <= 0:
+                messagebox.showerror(
+                    "Quantidade inválida",
+                    f"A quantidade de {ingrediente.nome} deve ser maior que zero.",
+                    parent=self,
+                )
+                return
+            selecionados.append(ingrediente)
+            quantidades[ingrediente.id] = quantidade
+
         CardapioViewController.salvar_detalhes(
-            self.item_pedido, selecionados, self.entry_observacao.get()
+            self.item_pedido,
+            selecionados,
+            self.entry_observacao.get(),
+            quantidades,
         )
         self.destroy()

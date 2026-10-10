@@ -6,7 +6,6 @@ from views.tabela import Tabela
 
 
 class SeletorIngredientes(tk.Frame):
-    """Listbox de múltipla escolha com todos os ingredientes cadastrados."""
 
     def __init__(self, parent, selecionados=()):
         super().__init__(parent)
@@ -131,7 +130,7 @@ class EditarCardapioWindow(tk.Frame):
 
         tk.Label(self, text="Itens:").pack(pady=2)
 
-        # rodapé empacotado antes da tabela para nunca sumir da tela
+        
         rodape = tk.Frame(self)
         rodape.pack(side="bottom", fill="x")
 

@@ -24,6 +24,9 @@ class PedidosViewController:
 
     @staticmethod
     def ingredientes_e_observacao(item):
-        ingredientes = ", ".join(ing.nome for ing in item.ingredientes) or "-"
+        ingredientes = ", ".join(
+            f"{item.quantidades_ingredientes.get(ing.id, 1)}x {ing.nome}"
+            for ing in item.ingredientes
+        ) or "-"
         observacao = item.observacao or "-"
         return ingredientes, observacao
