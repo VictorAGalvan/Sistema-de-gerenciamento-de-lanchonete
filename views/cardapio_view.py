@@ -1,16 +1,16 @@
 import tkinter as tk
-from tkinter import messagebox
 
 from controler.cardapio_view_controller import CardapioViewController
 from views.tabela import Tabela
 
 
 class Cardapio(tk.Frame):
-    def __init__(self, parent, app, cliente=None):
+    def __init__(self, parent, app, cliente=None, controller=None):
         super().__init__(parent)
         self.app = app
         self.cliente = cliente
-        self.controller = CardapioViewController(cliente)
+        # reaproveita o controller (e o carrinho) ao voltar da tela de detalhes
+        self.controller = controller or CardapioViewController(cliente)
         self.itens_por_iid = {}
         self.label_carrinho = None
         self.create_widgets()
@@ -58,9 +58,13 @@ class Cardapio(tk.Frame):
             return
 
         item_pedido = self.controller.obter_item_para_detalhes(item_cardapio)
-        self._atualizar_qtd(item_cardapio, item_pedido.quantidade)
-        ItensDetail(item_cardapio, item_pedido, master=self)
-
+        self.app.mostrar(
+            ItensDetail,
+            item_cardapio=item_cardapio,
+            item_pedido=item_pedido,
+            controller=self.controller,
+            cliente=self.cliente,
+        )
 
     def create_widgets(self):
         tk.Label(self, text="Cardápio", font=("Segoe UI", 16, "bold")).pack(pady=5)
@@ -106,10 +110,13 @@ class Cardapio(tk.Frame):
         for item in self.controller.listar_itens_ativos():
             iid = str(item.id)
             self.itens_por_iid[iid] = item
+            no_carrinho = self.controller.buscar_item_carrinho(item)
+            qtd = no_carrinho.quantidade if no_carrinho else 0
             self.tabela.tree.insert(
                 "", "end", iid=iid,
-                values=(item.id, item.nome, f"R${item.preco:.2f}", item.categoria, 0)
+                values=(item.id, item.nome, f"R${item.preco:.2f}", item.categoria, qtd)
             )
+        self._atualizar_resumo_carrinho()
 
     def fazer_pedido(self):
         mesa = self.entry_mesa.get() if self.cliente is None else ""
@@ -119,36 +126,48 @@ class Cardapio(tk.Frame):
             return
         self.app.voltar_menu()
 
-class ItensDetail(tk.Toplevel):
-    def __init__(self, item_cardapio, item_pedido, master=None):
-        super().__init__(master)
-        self.title(f"Detalhes do Item {item_pedido.nome}")
-        self.geometry("300x350")
+
+class ItensDetail(tk.Frame):
+    def __init__(self, parent, app, item_cardapio, item_pedido, controller, cliente=None):
+        super().__init__(parent)
+        self.app = app
         self.item_cardapio = item_cardapio
         self.item_pedido = item_pedido
+        self.controller = controller
+        self.cliente = cliente
         self.ingredientes = list(self.item_cardapio.ingredientes)
         self.selecionados = {}
         self.quantidades = {}
         self.create_widgets()
 
+    def voltar(self):
+        self.app.mostrar(Cardapio, cliente=self.cliente, controller=self.controller)
+
     def create_widgets(self):
-        tk.Label(self, text=f"Nome: {self.item_pedido.nome}").pack(pady=5)
-        tk.Label(self, text=f"Preço: R${self.item_pedido.preco:.2f}").pack(pady=5)
+        tk.Label(
+            self, text=f"Detalhes: {self.item_pedido.nome}", font=("Segoe UI", 16, "bold")
+        ).pack(pady=5)
+        tk.Label(self, text=f"Preço: R${self.item_pedido.preco:.2f}").pack(pady=2)
         tk.Label(
             self,
-            text="Personalize os ingredientes e suas quantidades antes de enviar o pedido.",
-            wraplength=280,
-        ).pack(pady=5)
-        tk.Label(self, text="Marque os ingredientes e ajuste a quantidade:").pack(pady=5)
+            text="Marque os ingredientes e ajuste a quantidade de cada um.",
+        ).pack(pady=2)
 
         rodape = tk.Frame(self)
         rodape.pack(side="bottom", fill="x")
 
-        tk.Label(rodape, text="Observação:").pack(pady=5)
+        tk.Label(rodape, text="Observação:").pack(pady=2)
         self.entry_observacao = tk.Entry(rodape)
         self.entry_observacao.insert(0, self.item_pedido.observacao or "")
-        self.entry_observacao.pack(pady=5)
-        tk.Button(rodape, text="Salvar", command=self.salvar).pack(pady=10)
+        self.entry_observacao.pack(pady=2)
+
+        self.label_erro = tk.Label(rodape, text="", fg="red")
+        self.label_erro.pack(pady=2)
+
+        botoes = tk.Frame(rodape)
+        botoes.pack(pady=10)
+        tk.Button(botoes, text="Salvar", command=self.salvar).pack(side="left", padx=5)
+        tk.Button(botoes, text="Voltar", command=self.voltar).pack(side="left", padx=5)
 
         frame_lista = tk.Frame(self)
         frame_lista.pack(fill="both", expand=True, padx=5)
@@ -212,17 +231,13 @@ class ItensDetail(tk.Toplevel):
             try:
                 quantidade = int(self.quantidades[ingrediente.id].get())
             except ValueError:
-                messagebox.showerror(
-                    "Quantidade inválida",
-                    f"Informe uma quantidade inteira para {ingrediente.nome}.",
-                    parent=self,
+                self.label_erro.config(
+                    text=f"Informe uma quantidade inteira para {ingrediente.nome}."
                 )
                 return
             if quantidade <= 0:
-                messagebox.showerror(
-                    "Quantidade inválida",
-                    f"A quantidade de {ingrediente.nome} deve ser maior que zero.",
-                    parent=self,
+                self.label_erro.config(
+                    text=f"A quantidade de {ingrediente.nome} deve ser maior que zero."
                 )
                 return
             selecionados.append(ingrediente)
@@ -234,4 +249,4 @@ class ItensDetail(tk.Toplevel):
             self.entry_observacao.get(),
             quantidades,
         )
-        self.destroy()
+        self.voltar()

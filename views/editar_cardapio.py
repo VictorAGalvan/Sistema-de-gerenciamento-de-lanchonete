@@ -287,28 +287,32 @@ class EditItemWindow(tk.Frame):
         self.create_widgets()
 
     def create_widgets(self):
-        tk.Label(self, text=f"Editar {self.item_cardapio.nome}", font=("Arial", 10, "bold")).pack(pady=5)
+        tk.Label(self, text=f"Editar {self.item_cardapio.nome}", font=("Arial", 10, "bold")).pack(pady=2)
 
-        tk.Label(self, text="Nome:").pack(pady=5)
+        tk.Label(self, text="Nome:").pack(pady=2)
         self.entry_nome = tk.Entry(self)
         self.entry_nome.insert(0, self.item_cardapio.nome)
-        self.entry_nome.pack(pady=5)
+        self.entry_nome.pack(pady=2)
 
-        tk.Label(self, text="Preço:").pack(pady=5)
+        tk.Label(self, text="Preço:").pack(pady=2)
         self.entry_preco = tk.Entry(self)
         self.entry_preco.insert(0, str(self.item_cardapio.preco))
-        self.entry_preco.pack(pady=5)
+        self.entry_preco.pack(pady=2)
 
-        tk.Label(self, text="Categoria:").pack(pady=5)
+        tk.Label(self, text="Categoria:").pack(pady=2)
         self.entry_categoria = tk.Entry(self)
         self.entry_categoria.insert(0, self.item_cardapio.categoria)
-        self.entry_categoria.pack(pady=5)
+        self.entry_categoria.pack(pady=2)
+
+        tk.Label(self, text="Ingredientes (clique para marcar/desmarcar):").pack(pady=2)
+        self.seletor = SeletorIngredientes(self, self.item_cardapio.ingredientes)
+        self.seletor.pack(fill="x", padx=5)
 
         self.label_erro = tk.Label(self, text="", fg="red")
-        self.label_erro.pack(pady=5)
+        self.label_erro.pack(pady=2)
 
         botoes = tk.Frame(self)
-        botoes.pack(pady=10)
+        botoes.pack(pady=5)
         tk.Button(botoes, text="Salvar", command=self.salvar).pack(side="left", padx=5)
         tk.Button(botoes, text="Voltar", command=self.voltar).pack(side="left", padx=5)
 
@@ -321,6 +325,7 @@ class EditItemWindow(tk.Frame):
             self.entry_nome.get(),
             self.entry_preco.get(),
             self.entry_categoria.get(),
+            self.seletor.selecionados(),
         )
         if erro:
             self.label_erro.config(text=erro)

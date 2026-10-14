@@ -16,6 +16,16 @@ class PedidosViewController:
     def calcular_total(pedido):
         return sum(item.preco * item.quantidade for item in pedido.itens_pedidos)
 
+    @staticmethod
+    def origem(pedido):
+        cliente = getattr(pedido, "cliente", None)
+        if cliente is not None:
+            return cliente.nome
+        mesa = getattr(pedido, "mesa", None)
+        if mesa is not None:
+            return f"Mesa {mesa}"
+        return "-"
+
     def avancar_pedido(self, pedido):
         if isinstance(pedido.estado, Pronto):
             return "Este pedido já está pronto."

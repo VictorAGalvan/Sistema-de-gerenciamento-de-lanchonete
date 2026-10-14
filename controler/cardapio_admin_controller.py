@@ -69,7 +69,7 @@ class CardapioAdminController:
         self.itens.criar_item_cardapio(item)
         return None
 
-    def salvar_item(self, item, nome, texto_preco, categoria):
+    def salvar_item(self, item, nome, texto_preco, categoria, ingredientes):
         try:
             preco = float(texto_preco)
         except ValueError:
@@ -78,5 +78,6 @@ class CardapioAdminController:
         item.nome = nome
         item.preco = preco
         item.categoria = categoria
+        item.ingredientes = ingredientes
         self.itens.editar_item_cardapio(item)
         return None

@@ -29,6 +29,7 @@ class Pedidos(tk.Frame):
 
         self.tabela = Tabela(self, [
             ("id", "Pedido", 70),
+            ("origem", "Mesa / Cliente", 150),
             ("total", "Total", 100),
             ("estado", "Estado", 150),
         ])
@@ -40,7 +41,12 @@ class Pedidos(tk.Frame):
             total = self.controller.calcular_total(pedido)
             self.tabela.tree.insert(
                 "", "end", iid=iid,
-                values=(f"#{pedido.id}", f"R${total:.2f}", str(pedido.estado))
+                values=(
+                    f"#{pedido.id}",
+                    self.controller.origem(pedido),
+                    f"R${total:.2f}",
+                    str(pedido.estado),
+                )
             )
 
     def _pedido_selecionado(self):
@@ -73,10 +79,12 @@ class DetalhesPedido(tk.Frame):
         super().__init__(parent)
         self.app = app
         self.pedido = pedido
+        self.controller = PedidosViewController()
         self.create_widgets()
 
     def create_widgets(self):
         tk.Label(self, text=f"Pedido #{self.pedido.id}").pack(pady=5)
+        tk.Label(self, text=f"Mesa / Cliente: {self.controller.origem(self.pedido)}").pack(pady=2)
         tk.Label(self, text=f"Estado: {self.pedido.estado}").pack(pady=5)
 
         rodape = tk.Frame(self)
