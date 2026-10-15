@@ -138,7 +138,7 @@ O projeto usa branches para separar a versão com persistência real (SQL, branc
 > LOGIC MODEL
 
 
-![LOGIC MODEL](./docs/DBlogicModel.PNG)
+![LOGIC MODEL](docs/DBlogicModel.PNG)
 
 
 ---
