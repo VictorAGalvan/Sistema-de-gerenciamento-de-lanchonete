@@ -131,7 +131,7 @@ O projeto usa branches para separar a versão com persistência real (SQL, branc
 
 > UML
 
-![Diagrama UML](./docs/DiagramaUML-lanchonete.jpg)
+![Diagrama UML](./docs/diagramaUML-lanchonete.jpg)
 
 # Modelo Lógico do Banco de Dados
 
