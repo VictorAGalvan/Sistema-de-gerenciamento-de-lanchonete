@@ -19,3 +19,29 @@ class Ingrediente_Controler:
     def excluir(self, id):
 
         self.dao.excluir(id)
+
+from dao.ingrediente_dao import IngredienteDAO
+
+
+class IngredienteController:
+
+    def __init__(self):
+        self.dao = IngredienteDAO()
+
+    def select_ingrediente(self):
+        return self.dao.select()
+
+    def insert_ingrediente(self, ingrediente):
+        return self.dao.insert(ingrediente)
+
+    def update_ingrediente(self, ingrediente):
+        return self.dao.update(ingrediente)
+
+    def restock_ingrediente(self, id_ingrediente, quantidade):
+        return self.dao.restock(id_ingrediente, quantidade)
+
+    def delete_ingrediente(self, ingrediente):
+        return self.dao.delete(ingrediente)
+
+    def selectID_ingrediente(self, id):
+        return self.dao.selectID(id)

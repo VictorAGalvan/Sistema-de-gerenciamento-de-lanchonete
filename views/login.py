@@ -1,13 +1,103 @@
 import tkinter as tk
-from views.cardapio_view import Cardapio
-# em outro arquivo, ex: main.py ou menu principal
-root = tk.Tk()
-# ... outros widgets do menu principal ...
+from controler.login_controller import LoginController
 
-def abrir_cardapio():
-    Cardapio(root)
 
-btn = tk.Button(root, text="Abrir Cardápio", command=abrir_cardapio)
-btn.pack()
+class LoginFrame(tk.Frame):
+    def __init__(self, parent, app):
+        super().__init__(parent)
+        self.app = app
+        self.controller = LoginController()
+        self.cliente = None
+        self.create_widgets()
 
-root.mainloop()
+    def create_widgets(self):
+        self.label_usuario = tk.Label(self, text="Usuário:")
+        self.label_usuario.pack(pady=5)
+
+        self.entry_usuario = tk.Entry(self)
+        self.entry_usuario.pack(pady=5)
+
+        self.label_senha = tk.Label(self, text="Senha:")
+        self.label_senha.pack(pady=5)
+
+        self.entry_senha = tk.Entry(self, show="*")
+        self.entry_senha.pack(pady=5)
+
+        self.label_erro = tk.Label(self, text="", fg="red")
+        self.label_erro.pack(pady=5)
+
+        self.botao_login = tk.Button(self, text="Login", command=self.verificar_login)
+        self.botao_login.pack(pady=10)
+
+        self.botao_registrar = tk.Button(self, text="Registrar", command=self.abrir_registro)
+        self.botao_registrar.pack(pady=10)
+
+    def abrir_registro(self):
+        Registrar(self, self.controller)
+
+    def verificar_login(self):
+        usuario = self.entry_usuario.get()
+        senha = self.entry_senha.get()
+
+        cliente, perfil = self.controller.autenticar(usuario, senha)
+        if perfil == "admin":
+            self.app.abrir_sistema_admin()
+            return
+
+        if perfil == "usuario":
+            self.cliente = cliente
+            self.app.abrir_sistema_usuario()
+        else:
+            self.label_erro.config(text="Usuário ou senha incorretos.")
+
+
+class Registrar(tk.Toplevel):
+    def __init__(self, master=None, controller=None):
+        super().__init__(master)
+        self.title("Registrar")
+        self.geometry("300x200")
+        self.controller = controller or LoginController()
+        self.create_widgets()
+
+    def create_widgets(self):
+        self.label_nome = tk.Label(self, text="Nome:")
+        self.label_nome.pack(pady=5)
+
+        self.entry_nome = tk.Entry(self)
+        self.entry_nome.pack(pady=5)
+
+        self.label_cpf = tk.Label(self, text="CPF:")
+        self.label_cpf.pack(pady=5)
+
+        self.entry_cpf = tk.Entry(self)
+        self.entry_cpf.pack(pady=5)
+
+        self.label_telefone = tk.Label(self, text="Telefone:")
+        self.label_telefone.pack(pady=5)
+
+        self.entry_telefone = tk.Entry(self)
+        self.entry_telefone.pack(pady=5)
+
+        self.label_senha = tk.Label(self, text="Senha:")
+        self.label_senha.pack(pady=5)
+
+        self.entry_senha = tk.Entry(self, show="*")
+        self.entry_senha.pack(pady=5)
+
+        self.label_erro = tk.Label(self, text="", fg="red")
+        self.label_erro.pack(pady=5)
+
+        self.botao_registrar = tk.Button(self, text="Registrar", command=self.registrar_cliente)
+        self.botao_registrar.pack(pady=10)
+
+    def registrar_cliente(self):
+        nome = self.entry_nome.get()
+        senha = self.entry_senha.get()
+        cpf = self.entry_cpf.get()
+        telefone = self.entry_telefone.get()
+
+        erro = self.controller.registrar(nome, senha, cpf, telefone)
+        if erro:
+            self.label_erro.config(text=erro)
+            return
+        self.destroy()
