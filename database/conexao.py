@@ -2,7 +2,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from database.base import Base
-# from models import *
 from models.Ingrediente import Ingrediente
 nome = "lancheriaDB"
 user = "postgres"
