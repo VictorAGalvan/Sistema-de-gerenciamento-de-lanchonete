@@ -10,9 +10,7 @@ Este projeto consiste no desenvolvimento de um sistema de uma lanchonete, tendo 
  
 O sistema gerencia pedidos de uma lanchonete. Ele tem três perfis de uso: cliente, garçom/admin no balcão, e admin gerenciando o cardápio. O sistema usa uma interface gráfica feita em Tkinter e persiste os dados em um banco PostgreSQL (ou, opcionalmente, em memória, usando uma branch separada com dados mock).
  
-## 2. Arquitetura
-
-[Arquitetura](docs/arquitetura.md)
+## 2. [Arquitetura](docs/arquitetura.md)
  
 ## 3. Fluxos principais (os três botões)
  
