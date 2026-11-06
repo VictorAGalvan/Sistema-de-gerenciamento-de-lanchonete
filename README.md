@@ -8,7 +8,7 @@ Este projeto consiste no desenvolvimento de um sistema de uma lanchonete, tendo 
 # Documentação Técnica — Sistema de Gerenciamento de Lanchonete
 ### Sumário da Documentação
 
-*[1. Objetivo do sistema](../../wiki/Objetivo-do-sistema)
+*[1. Objetivo do sistema](../../wiki/Objetivo-do-sistema)*
 
 *[2. Arquitetura](../../wiki/Arquitetura)
 
