@@ -8,18 +8,18 @@ Este projeto consiste no desenvolvimento de um sistema de uma lanchonete, tendo 
 # Documentação Técnica — Sistema de Gerenciamento de Lanchonete
 ### Sumário da Documentação
 
-*[1. Objetivo do sistema](../../wiki/Objetivo-do-sistema)*
+*[1. Objetivo do sistema](../../wiki/1.-Objetivo-do-sistema)*
 
-*[2. Arquitetura](../../wiki/Arquitetura)*
+*[2. Arquitetura](../../wiki/2.-Arquitetura)*
 
-*[3. Fluxos principais](../../wiki/Fluxos-principais-(os-três-botões))*
+*[3. Fluxos principais](../../wiki/3.-Fluxos-principais-(os-três-botões))*
 
-*[4. Padrões de projeto utilizados](../../wiki/Padrões-de-projeto-utilizados)*
+*[4. Padrões de projeto utilizados](../../wiki/4.-Padrões-de-projeto-utilizados)*
 
-*[5. Decisões de modelagem de dados](../../wiki/Decisões-de-modelagem-de-dados)*
+*[5. Decisões de modelagem de dados](../../5.-wiki/Decisões-de-modelagem-de-dados)*
 
-*[6. Trabalhos futuros](../../wiki/Trabalhos-futuros)*
+*[6. Trabalhos futuros](../../wiki/6.-Trabalhos-futuros)*
 
-*[7. Como usar o projeto](../../wiki/Como-usar-o-projeto)*
+*[7. Como usar o projeto](../../wiki/7.-Como-usar-o-projeto)*
 
-*[8. Organização do repositório](../../wiki/Organização-do-repositório)*
+*[8. Organização do repositório](../../wiki/8.-Organização-do-repositório)*
