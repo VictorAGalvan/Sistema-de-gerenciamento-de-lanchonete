@@ -8,9 +8,9 @@ Este projeto consiste no desenvolvimento de um sistema de uma lanchonete, tendo 
 ## Wiki
 ### Sumário da Documentação
 
-[1. Objetivo do sistema](../../wiki/Objetivo-do-sistema)
-[2. Arquitetura](../../wiki/Arquitetura)
-[3.Fluxos principais](../../wiki/Fluxos-principais-(os-três-botões))
+*[1. Objetivo do sistema](../../wiki/Objetivo-do-sistema)
+*[2. Arquitetura](../../wiki/Arquitetura)
+*[3.Fluxos principais](../../wiki/Fluxos-principais-(os-três-botões))
  
 ## 3. Fluxos principais (os três botões)
  
