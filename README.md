@@ -23,3 +23,5 @@ Este projeto consiste no desenvolvimento de um sistema de uma lanchonete, tendo 
 *[7. Como usar o projeto](../../wiki/7.-Como-usar-o-projeto)*
 
 *[8. Organização do repositório](../../wiki/8.-Organização-do-repositório)*
+
+*[9. Instalação e Execução da aplicação](../../wiki/9.-Instalação-e-Execução)*
