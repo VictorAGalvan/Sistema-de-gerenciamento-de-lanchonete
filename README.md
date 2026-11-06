@@ -13,7 +13,7 @@ O sistema gerencia pedidos de uma lanchonete. Ele tem três perfis de uso: clien
 ## Wiki
 ### Sumário da Documentação
 
-📋 [1. Objetivo do sistema](../../wiki/Objetivo do sistema)
+[1. Objetivo do sistema](../../wiki/Objetivo-do-sistema)
  
 ## 3. Fluxos principais (os três botões)
  
