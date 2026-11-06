@@ -1,45 +1,44 @@
-from sqlalchemy import select
+from sqlalchemy import select, update
+
 from database.conexao import SessionLocal
 from models.Ingrediente import Ingrediente
 
+
 class IngredienteDAO:
 
-    def inserir(self, ingrediente):
+    def select(self):
+        with SessionLocal() as session:
+            return session.scalars(select(Ingrediente)).all()
 
+    def selectID(self, id_ingrediente):
+        with SessionLocal() as session:
+            return session.get(Ingrediente, id_ingrediente)
+
+    def insert(self, ingrediente: Ingrediente):
         with SessionLocal() as session:
             session.add(ingrediente)
             session.commit()
             session.refresh(ingrediente)
-
             return ingrediente
 
-    def listar(self):
-
+    def update(self, ingrediente: Ingrediente):
         with SessionLocal() as session:
-
-            resultado = session.scalars(select(Ingrediente))
-
-            return resultado.all()
-
-    def buscar_por_id(self, id):
-
-        with SessionLocal() as session:
-
-            return session.get(Ingrediente, id)
-
-    def atualizar(self, ingrediente):
-
-        with SessionLocal() as session:
-
             session.merge(ingrediente)
             session.commit()
+        return ingrediente
 
-    def excluir(self, id):
-
+    def restock(self, id_ingrediente: int, quantidade: float):
         with SessionLocal() as session:
+            session.execute(
+                update(Ingrediente)
+                .where(Ingrediente._id == id_ingrediente)
+                .values(quantidade=Ingrediente._quantidade + quantidade)
+                .execution_options(synchronize_session=False)
+            )
+            session.commit()
 
-            ingrediente = session.get(Ingrediente, id)
-
-            if ingrediente:
-                session.delete(ingrediente)
-                session.commit()
+    def delete(self, ingrediente: Ingrediente):
+        with SessionLocal() as session:
+            gerenciado = session.merge(ingrediente)
+            session.delete(gerenciado)
+            session.commit()

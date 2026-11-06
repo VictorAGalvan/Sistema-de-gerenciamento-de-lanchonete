@@ -1,6 +1,6 @@
-from sqlalchemy import text
+from sqlalchemy import select, update
 
-from database.conexao import engine
+from database.conexao import SessionLocal
 from models.ItensCardapio import ItensCardapio
 from models.Ingrediente import Ingrediente
 
@@ -8,103 +8,58 @@ from models.Ingrediente import Ingrediente
 class ItensCardapioDAO:
 
     def select(self):
-        with engine.connect() as connection:
-            resultado = connection.execute(text("""
-                SELECT id, nome, preco, categoria, idcardapio
-                FROM itensCardapio
-            """))
-            return [
-                ItensCardapio(
-                    id=row.id, nome=row.nome, preco=row.preco,
-                    categoria=row.categoria, id_cardapio=row.idcardapio,
-                    ingredientes=self.selectIngredientes(row.id)
-                )
-                for row in resultado
-            ]
+        with SessionLocal() as session:
+            return session.scalars(select(ItensCardapio)).all()
 
     def selectID(self, id: int):
-        with engine.connect() as connection:
-            row = connection.execute(
-                text("SELECT id, nome, preco, categoria, idcardapio FROM itensCardapio WHERE id = :id"),
-                {"id": id},
-            ).fetchone()
-            if row is None:
-                return None
-            return ItensCardapio(
-                id=row.id, nome=row.nome, preco=row.preco,
-                categoria=row.categoria, id_cardapio=row.idcardapio,
-                ingredientes=self.selectIngredientes(row.id)
-            )
+        with SessionLocal() as session:
+            return session.get(ItensCardapio, id)
 
     def select_por_cardapio(self, id_cardapio: int):
-        with engine.connect() as connection:
-            resultado = connection.execute(
-                text("SELECT id, nome, preco, categoria, idcardapio FROM itensCardapio WHERE idcardapio = :id_cardapio"),
-                {"id_cardapio": id_cardapio},
-            )
-            return [
-                ItensCardapio(
-                    id=row.id, nome=row.nome, preco=row.preco,
-                    categoria=row.categoria, id_cardapio=row.idcardapio,
-                    ingredientes=self.selectIngredientes(row.id)
-                )
-                for row in resultado
-            ]
+        with SessionLocal() as session:
+            return session.scalars(
+                select(ItensCardapio).where(ItensCardapio._id_cardapio == id_cardapio)
+            ).all()
 
     def insert(self, item: ItensCardapio):
-        with engine.begin() as connection:
-            resultado = connection.execute(
-                text("""
-                    INSERT INTO itensCardapio (nome, preco, categoria, idcardapio)
-                    VALUES (:nome, :preco, :categoria, :id_cardapio)
-                    RETURNING id
-                """),
-                {"nome": item.nome, "preco": item.preco, "categoria": item.categoria, "id_cardapio": item.id_cardapio},
-            )
-            item.id = resultado.scalar()
+        with SessionLocal() as session:
+            session.add(item)
+            session.commit()
+            session.refresh(item)
 
     def update(self, item: ItensCardapio):
-        with engine.begin() as connection:
-            connection.execute(
-                text("""
-                    UPDATE itensCardapio
-                    SET nome = :nome, preco = :preco, categoria = :categoria
-                    WHERE id = :id
-                """),
-                {"id": item.id, "nome": item.nome, "preco": item.preco, "categoria": item.categoria},
+        with SessionLocal() as session:
+            session.execute(
+                update(ItensCardapio)
+                .where(ItensCardapio._id == item.id)
+                .values(nome=item.nome, preco=item.preco,
+                        categoria=item.categoria, idcardapio=item.id_cardapio)
+                .execution_options(synchronize_session=False)
             )
+            session.commit()
 
     def delete(self, item: ItensCardapio):
-        self.deleteIngredientes(item.id)
-        with engine.begin() as connection:
-            connection.execute(text("DELETE FROM itensCardapio WHERE id = :id"), {"id": item.id})
+        with SessionLocal() as session:
+            gerenciado = session.merge(item)
+            session.delete(gerenciado)
+            session.commit()
 
     def selectIngredientes(self, id_item: int):
-        with engine.connect() as connection:
-            resultado = connection.execute(
-                text("""
-                    SELECT g.id, g.nome, g.unidade, g.quantidade
-                    FROM itemIngredienteCardapio icg
-                    JOIN ingredientes g ON g.id = icg.idingredientes
-                    WHERE icg.iditensCardapio = :id_item
-                """),
-                {"id_item": id_item},
-            )
-            return [Ingrediente(id=r.id, nome=r.nome, unidade=r.unidade, quantidade=r.quantidade) for r in resultado]
+        with SessionLocal() as session:
+            item = session.get(ItensCardapio, id_item)
+            return list(item.ingredientes) if item else []
 
     def insertIngrediente(self, id_item: int, id_ingrediente: int):
-        with engine.begin() as connection:
-            connection.execute(
-                text("""
-                    INSERT INTO itemIngredienteCardapio (iditensCardapio, idingredientes)
-                    VALUES (:id_item, :id_ingrediente)
-                """),
-                {"id_item": id_item, "id_ingrediente": id_ingrediente},
-            )
+        with SessionLocal() as session:
+            item = session.get(ItensCardapio, id_item)
+            ingrediente = session.get(Ingrediente, id_ingrediente)
+            if item and ingrediente and ingrediente not in item.ingredientes:
+                item.ingredientes.append(ingrediente)
+                session.commit()
 
     def deleteIngredientes(self, id_item: int):
-        with engine.begin() as connection:
-            connection.execute(
-                text("DELETE FROM itemIngredienteCardapio WHERE iditensCardapio = :id_item"),
-                {"id_item": id_item},
-            )
+        with SessionLocal() as session:
+            item = session.get(ItensCardapio, id_item)
+            if item:
+                item.ingredientes.clear()
+                session.commit()

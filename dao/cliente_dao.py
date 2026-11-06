@@ -1,110 +1,39 @@
-from sqlalchemy import text
+from sqlalchemy import select
 
-from database.conexao import engine
+from database.conexao import SessionLocal
 from models.Cliente import Cliente
+
 
 class ClienteDAO:
 
     def select(self):
-        sql = text("""
-            SELECT id, nome, cpf, telefone, senha
-            FROM clientes
-        """)
-        with engine.connect() as connection:
-            resultado = connection.execute(sql)
-            clientes = []
-            for row in resultado:
-                clientes.append(
-                    Cliente(
-                        id=row.id,
-                        nome=row.nome,
-                        cpf=row.cpf,
-                        telefone=row.telefone,
-                        senha=row.senha,
-                    )
-                )
-            return clientes
-
-    def insert(self, cliente):
-        with engine.begin() as connection:
-            resultado = connection.execute(
-                text("""
-                    INSERT INTO clientes (nome, cpf, telefone, senha)
-                    VALUES (:nome, :cpf, :telefone, :senha)
-                    RETURNING id
-                """),
-                {
-                    "nome": cliente.nome,
-                    "cpf": cliente.cpf,
-                    "telefone": cliente.telefone,
-                    "senha": cliente.senha,
-                },
-            )
-            cliente.id = resultado.scalar()
-
-    def update(self, cliente):
-        with engine.begin() as connection:
-            connection.execute(
-                text("""
-                    UPDATE clientes
-                    SET nome = :nome,
-                        cpf = :cpf,
-                        telefone = :telefone,
-                        senha = :senha
-                    WHERE id = :id
-                """),
-                {
-                    "nome": cliente.nome,
-                    "cpf": cliente.cpf,
-                    "telefone": cliente.telefone,
-                    "senha": cliente.senha,
-                    "id": cliente.id,
-                },
-            )
-
-    def delete(self, id_cliente):
-        with engine.begin() as connection:
-            connection.execute(
-                text("DELETE FROM clientes WHERE id = :id"),
-                {"id": id_cliente},
-            )
+        with SessionLocal() as session:
+            return session.scalars(select(Cliente)).all()
 
     def selectID(self, id_cliente):
-        sql = text("""
-            SELECT id, nome, cpf, telefone, senha
-            FROM clientes
-            WHERE id = :id
-        """)
-        with engine.connect() as connection:
-            resultado = connection.execute(sql, {"id": id_cliente})
-            row = resultado.fetchone()
-            if row:
-                return Cliente(
-                    id=row.id,
-                    nome=row.nome,
-                    cpf=row.cpf,
-                    telefone=row.telefone,
-                    senha=row.senha,
-                )
-            else:
-                return None
+        with SessionLocal() as session:
+            return session.get(Cliente, id_cliente)
 
     def selectNome(self, nome):
-        sql = text("""
-            SELECT id, nome, cpf, telefone, senha
-            FROM clientes
-            WHERE nome = :nome
-        """)
-        with engine.connect() as connection:
-            resultado = connection.execute(sql, {"nome": nome})
-            row = resultado.fetchone()
-            if row:
-                return Cliente(
-                    id=row.id,
-                    nome=row.nome,
-                    cpf=row.cpf,
-                    telefone=row.telefone,
-                    senha=row.senha,
-                )
-            else:
-                return None
+        with SessionLocal() as session:
+            return session.scalars(select(Cliente).where(Cliente._nome == nome)).first()
+
+    def insert(self, cliente):
+        with SessionLocal() as session:
+            session.add(cliente)
+            session.commit()
+            session.refresh(cliente)
+        return cliente
+
+    def update(self, cliente):
+        with SessionLocal() as session:
+            session.merge(cliente)
+            session.commit()
+        return cliente
+
+    def delete(self, id_cliente):
+        with SessionLocal() as session:
+            cliente = session.get(Cliente, id_cliente)
+            if cliente:
+                session.delete(cliente)
+                session.commit()

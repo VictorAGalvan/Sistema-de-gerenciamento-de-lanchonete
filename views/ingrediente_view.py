@@ -1,5 +1,5 @@
-from controllers.IngredienteController import IngredienteController
-
+from controler.ingrediente_controler import IngredienteController
+from models.Ingrediente import Ingrediente
 
 class IngredienteView:
 
@@ -10,6 +10,8 @@ class IngredienteView:
         nome = input("Nome do ingrediente: ")
         quantidade = int(input("Quantidade: "))
 
-        ingrediente = self.controller.cadastrar(nome, quantidade)
+        ingrediente = self.controller.insert_ingrediente(
+            Ingrediente(id=None, nome=nome, unidade="un", quantidade=quantidade)
+        )
 
         print(f"Ingrediente {ingrediente.nome} cadastrado!")
