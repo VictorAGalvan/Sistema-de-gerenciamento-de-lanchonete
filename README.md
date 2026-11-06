@@ -10,16 +10,16 @@ Este projeto consiste no desenvolvimento de um sistema de uma lanchonete, tendo 
 
 *[1. Objetivo do sistema](../../wiki/Objetivo-do-sistema)*
 
-*[2. Arquitetura](../../wiki/Arquitetura)
+*[2. Arquitetura](../../wiki/Arquitetura)*
 
-*[3.Fluxos principais](../../wiki/Fluxos-principais-(os-três-botões))
+*[3.Fluxos principais](../../wiki/Fluxos-principais-(os-três-botões))*
 
-*[4.Padrões de projeto utilizados](../../wiki/Padrões-de-projeto-utilizados)
+*[4.Padrões de projeto utilizados](../../wiki/Padrões-de-projeto-utilizados)*
 
-*[5.Decisões de modelagem de dados](../../wiki/Decisões-de-modelagem-de-dados)
+*[5.Decisões de modelagem de dados](../../wiki/Decisões-de-modelagem-de-dados)*
 
-*[6.Trabalhos futuros](../../wiki/Trabalhos-futuros)
+*[6.Trabalhos futuros](../../wiki/Trabalhos-futuros)*
 
-*[7.Como usar o projeto](../../wiki/Como-usar-o-projeto)
+*[7.Como usar o projeto](../../wiki/Como-usar-o-projeto)*
 
-*[8.Organização do repositório](../../wiki/Organização-do-repositório)
+*[8.Organização do repositório](../../wiki/Organização-do-repositório)*
