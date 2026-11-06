@@ -5,15 +5,12 @@ Este projeto consiste no desenvolvimento de um sistema de uma lanchonete, tendo 
 - Banco/Desenvolvimento: Victor Antônio Galvan (VictorAGalvan)
 - Banco/Desenvolvimento: Rafael Albuquerque de Paula (Rafael-Dpaula)
 # Documentação Técnica — Sistema de Gerenciamento de Lanchonete
- 
-## 1. Objetivo do sistema
- 
-O sistema gerencia pedidos de uma lanchonete. Ele tem três perfis de uso: cliente, garçom/admin no balcão, e admin gerenciando o cardápio. O sistema usa uma interface gráfica feita em Tkinter e persiste os dados em um banco PostgreSQL (ou, opcionalmente, em memória, usando uma branch separada com dados mock).
- 
 ## Wiki
 ### Sumário da Documentação
 
 [1. Objetivo do sistema](../../wiki/Objetivo-do-sistema)
+[2. Arquitetura](../../wiki/Arquitetura)
+[3.Fluxos principais](../../wiki/Fluxos-principais-(os-três-botões))
  
 ## 3. Fluxos principais (os três botões)
  
