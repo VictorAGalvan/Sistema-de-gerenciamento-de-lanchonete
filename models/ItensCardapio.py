@@ -6,7 +6,7 @@ from models.Ingrediente import Ingrediente
 
 # tabela de associação item do cardápio <-> ingrediente
 item_ingrediente_cardapio = Table(
-    "itemIngredienteCardapio",
+    "itemingredientecardapio",
     Base.metadata,
     Column("id", Integer, primary_key=True, autoincrement=True),
     Column("iditensCardapio", ForeignKey("itenscardapio.id"), nullable=False),
