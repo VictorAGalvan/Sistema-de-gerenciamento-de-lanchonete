@@ -1,120 +1,44 @@
-from sqlalchemy import text
+from sqlalchemy import select, update
 
-from database.conexao import engine
+from database.conexao import SessionLocal
 from models.Ingrediente import Ingrediente
 
 
 class IngredienteDAO:
 
     def select(self):
+        with SessionLocal() as session:
+            return session.scalars(select(Ingrediente)).all()
 
-        with engine.connect() as connection:
-
-            resultado = connection.execute(text("""
-                    SELECT id, nome, unidade, quantidade
-                    FROM Ingredientes
-                """))
-
-            ingredientes = []
-
-            for row in resultado:
-
-                ingrediente = Ingrediente(
-                    id=row.id,
-                    nome=row.nome,
-                    unidade=row.unidade,
-                    quantidade=row.quantidade,
-                )
-
-                ingredientes.append(ingrediente)
-
-            return ingredientes
+    def selectID(self, id_ingrediente):
+        with SessionLocal() as session:
+            return session.get(Ingrediente, id_ingrediente)
 
     def insert(self, ingrediente: Ingrediente):
-
-        with engine.begin() as connection:
-
-            connection.execute(
-                text("""
-                    INSERT INTO Ingredientes
-                        (nome, unidade, quantidade)
-                    VALUES
-                        (:nome, :unidade, :quantidade)
-                """),
-                {
-                    "nome": ingrediente.nome,
-                    "unidade": ingrediente.unidade,
-                    "quantidade": ingrediente.quantidade,
-                },
-            )
+        with SessionLocal() as session:
+            session.add(ingrediente)
+            session.commit()
+            session.refresh(ingrediente)
+            return ingrediente
 
     def update(self, ingrediente: Ingrediente):
+        with SessionLocal() as session:
+            session.merge(ingrediente)
+            session.commit()
+        return ingrediente
 
-        with engine.begin() as connection:
-
-            connection.execute(
-                text("""
-                    UPDATE Ingredientes
-                    SET nome = :nome,
-                        unidade = :unidade,
-                        quantidade = :quantidade
-                    WHERE id = :id
-                """),
-                {
-                    "id": ingrediente.id,
-                    "nome": ingrediente.nome,
-                    "unidade": ingrediente.unidade,
-                    "quantidade": ingrediente.quantidade,
-                },
+    def restock(self, id_ingrediente: int, quantidade: float):
+        with SessionLocal() as session:
+            session.execute(
+                update(Ingrediente)
+                .where(Ingrediente._id == id_ingrediente)
+                .values(quantidade=Ingrediente._quantidade + quantidade)
+                .execution_options(synchronize_session=False)
             )
-
-    def restock(self, id_ingrediente: int, quantidade: int):
-        with engine.begin() as connection:
-            resultado = connection.execute(
-                text("""
-                    UPDATE Ingredientes
-                    SET quantidade = quantidade + :quantidade
-                    WHERE id = :id
-                    RETURNING id
-                """),
-                {"id": id_ingrediente, "quantidade": quantidade},
-            )
-            if resultado.scalar() is None:
-                raise LookupError(f"Ingrediente {id_ingrediente} não encontrado.")
+            session.commit()
 
     def delete(self, ingrediente: Ingrediente):
-        with engine.begin() as connection:
-
-            connection.execute(
-                text("""
-                    DELETE FROM Ingredientes
-                    WHERE id = :id
-                """),
-                {"id": ingrediente.id},
-            )
-
-    def selectID(self, id: int):
-
-        with engine.connect() as connection:
-
-            resultado = connection.execute(
-                text("""
-                    SELECT id, nome, unidade, quantidade
-                    FROM Ingredientes
-                    WHERE id = :id
-                """),
-                {"id": id},
-            )
-
-            row = resultado.fetchone()
-
-            if row is not None:
-                ingrediente = Ingrediente(
-                    id=row.id,
-                    nome=row.nome,
-                    unidade=row.unidade,
-                    quantidade=row.quantidade,
-                )
-                return ingrediente
-            else:
-                return None
+        with SessionLocal() as session:
+            gerenciado = session.merge(ingrediente)
+            session.delete(gerenciado)
+            session.commit()

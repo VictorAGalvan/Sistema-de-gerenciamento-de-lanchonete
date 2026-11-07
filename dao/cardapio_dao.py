@@ -1,77 +1,49 @@
-from sqlalchemy import text
+from sqlalchemy import select, update
 
-from database.conexao import engine
+from database.conexao import SessionLocal
 from models.Cardapio import Cardapio
 
 
 class CardapioDAO:
-
     def select(self):
-        with engine.connect() as connection:
-            resultado = connection.execute(text("""
-                SELECT id, data, versao, ativo
-                FROM cardapios
-                ORDER BY data
-            """))
-            return [
-                Cardapio(id=row.id, data=row.data, versao=row.versao, ativo=row.ativo)
-                for row in resultado
-            ]
+        with SessionLocal() as session:
+            return session.scalars(select(Cardapio).order_by(Cardapio._data)).all()
 
     def selectID(self, id: int):
-        with engine.connect() as connection:
-            row = connection.execute(
-                text("SELECT id, data, versao, ativo FROM cardapios WHERE id = :id"),
-                {"id": id},
-            ).fetchone()
-            if row is None:
-                return None
-            return Cardapio(id=row.id, data=row.data, versao=row.versao, ativo=row.ativo)
+        with SessionLocal() as session:
+            return session.get(Cardapio, id)
 
     def insert(self, cardapio: Cardapio):
-        with engine.begin() as connection:
-            resultado = connection.execute(
-                text("""
-                    INSERT INTO cardapios (data, versao, ativo)
-                    VALUES (:data, :versao, :ativo)
-                    RETURNING id
-                """),
-                {"data": cardapio.data, "versao": cardapio.versao, "ativo": cardapio.ativo},
-            )
-            cardapio.id = resultado.scalar()
+        with SessionLocal() as session:
+            session.add(cardapio)
+            session.commit()
+            session.refresh(cardapio)
 
     def update(self, cardapio: Cardapio):
-        with engine.begin() as connection:
-            connection.execute(
-                text("""
-                    UPDATE cardapios
-                    SET data = :data, versao = :versao
-                    WHERE id = :id
-                """),
-                {"id": cardapio.id, "data": cardapio.data, "versao": cardapio.versao},
-            )
+        with SessionLocal() as session:
+            session.merge(cardapio)
+            session.commit()
 
     def delete(self, cardapio: Cardapio):
-        with engine.begin() as connection:
-            connection.execute(text("DELETE FROM cardapios WHERE id = :id"), {"id": cardapio.id})
+        with SessionLocal() as session:
+            gerenciado = session.merge(cardapio)
+            session.delete(gerenciado)
+            session.commit()
 
     def get_ativo(self):
-        with engine.connect() as connection:
-            row = connection.execute(
-                text("SELECT id, data, versao, ativo FROM cardapios WHERE ativo = true LIMIT 1")
-            ).fetchone()
-            if row is None:
-                return None
-            return Cardapio(id=row.id, data=row.data, versao=row.versao, ativo=row.ativo)
+        with SessionLocal() as session:
+            return session.scalars(
+                select(Cardapio).where(Cardapio._ativo == True)  # noqa: E712
+            ).first()
 
     def get_ativo_id(self):
         ativo = self.get_ativo()
         return ativo.id if ativo else None
 
     def set_ativo(self, id_cardapio: int):
-        with engine.begin() as connection:
-            connection.execute(text("UPDATE cardapios SET ativo = false"))
-            connection.execute(
-                text("UPDATE cardapios SET ativo = true WHERE id = :id"),
-                {"id": id_cardapio},
+        with SessionLocal() as session:
+            session.execute(update(Cardapio).values(ativo=False))
+            session.execute(
+                update(Cardapio).where(Cardapio._id == id_cardapio).values(ativo=True)
             )
+            session.commit()

@@ -1,6 +1,5 @@
 from models.ItensCardapio import ItensCardapio
 
-
 class ItensPedido(ItensCardapio):
     def __init__(
         self,
@@ -14,7 +13,8 @@ class ItensPedido(ItensCardapio):
             item_cardapio.nome,
             item_cardapio.preco,
             item_cardapio.categoria,
-            list(item_cardapio.ingredientes)
+            list(item_cardapio.ingredientes),
+            id_cardapio=getattr(item_cardapio, "id_cardapio", None),
         )
         self.__quantidade = quantidade
         self.__observacao = observacao
@@ -27,6 +27,7 @@ class ItensPedido(ItensCardapio):
     @property
     def quantidade(self):
         return self.__quantidade
+
     @property
     def observacao(self):
         return self.__observacao
@@ -35,10 +36,10 @@ class ItensPedido(ItensCardapio):
     def quantidades_ingredientes(self):
         return self.__quantidades_ingredientes
 
-
     @quantidade.setter
     def quantidade(self, n_quantidade):
         self.__quantidade = n_quantidade
+
     @observacao.setter
     def observacao(self, n_observacao):
         self.__observacao = n_observacao
@@ -46,4 +47,3 @@ class ItensPedido(ItensCardapio):
     @quantidades_ingredientes.setter
     def quantidades_ingredientes(self, n_quantidades):
         self.__quantidades_ingredientes = dict(n_quantidades)
-    
