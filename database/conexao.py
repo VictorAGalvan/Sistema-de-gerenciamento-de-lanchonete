@@ -12,7 +12,7 @@ import models.ItensCardapio
 
 nome = "lanchoneteDB"
 user = "postgres"
-password = "admin"
+password = "postgres"
 host = "localhost"
 port = "5432"
 DATABASE_URL = f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{nome}"
