@@ -18,7 +18,9 @@ class ItensCardapioDAO:
     def select_por_cardapio(self, id_cardapio: int):
         with SessionLocal() as session:
             return session.scalars(
-                select(ItensCardapio).where(ItensCardapio._id_cardapio == id_cardapio)
+                select(ItensCardapio)
+                .where(ItensCardapio._id_cardapio == id_cardapio)
+                .order_by(ItensCardapio._id)
             ).all()
 
     def insert(self, item: ItensCardapio):
@@ -32,17 +34,19 @@ class ItensCardapioDAO:
             session.execute(
                 update(ItensCardapio)
                 .where(ItensCardapio._id == item.id)
-                .values(nome=item.nome, preco=item.preco,
-                        categoria=item.categoria, idcardapio=item.id_cardapio)
+                .values(_nome=item.nome, _preco=item.preco,
+                        _categoria=item.categoria, _id_cardapio=item.id_cardapio)
                 .execution_options(synchronize_session=False)
             )
             session.commit()
 
     def delete(self, item: ItensCardapio):
         with SessionLocal() as session:
-            gerenciado = session.merge(item)
-            session.delete(gerenciado)
-            session.commit()
+            gerenciado = session.get(ItensCardapio, item.id)
+            if gerenciado:
+                gerenciado.ingredientes.clear()
+                session.delete(gerenciado)
+                session.commit()
 
     def selectIngredientes(self, id_item: int):
         with SessionLocal() as session:

@@ -1,35 +1,30 @@
-from dao.itens_pedido_dao import ItensPedidoDAO
+from dao.itens_cardapio_dao import ItensCardapioDAO
 
 
-class ItensPedidoControler:
+class ItensCardapioControler:
+
     def __init__(self):
-        self.dao = ItensPedidoDAO()
+        self.dao = ItensCardapioDAO()
 
-    def listar_itens_pedido(self):
+    def listar_itens_cardapio(self):
         return self.dao.select()
 
-    def buscar_item_pedido(self, id_item):
+    def listar_por_cardapio(self, id_cardapio):
+        return self.dao.select_por_cardapio(id_cardapio)
+
+    def buscar_item_cardapio(self, id_item):
         return self.dao.selectID(id_item)
 
-    def criar_item_pedido(self, item):
+    def criar_item_cardapio(self, item):
         self.dao.insert(item)
         for ingrediente in item.ingredientes:
-            self.dao.insertIngrediente(
-                item.id,
-                ingrediente.id,
-                item.quantidades_ingredientes.get(ingrediente.id, 1),
-            )
+            self.dao.insertIngrediente(item.id, ingrediente.id)
 
-    def editar_item_pedido(self, item):
+    def editar_item_cardapio(self, item):
         self.dao.update(item)
         self.dao.deleteIngredientes(item.id)
         for ingrediente in item.ingredientes:
-            self.dao.insertIngrediente(
-                item.id,
-                ingrediente.id,
-                item.quantidades_ingredientes.get(ingrediente.id, 1),
-            )
+            self.dao.insertIngrediente(item.id, ingrediente.id)
 
-    def remover_item_pedido(self, item):
-        self.dao.deleteIngredientes(item.id)
-        self.dao.delete(item)
+    def remover_item_cardapio(self, item):
+        self.dao.delete(item)  

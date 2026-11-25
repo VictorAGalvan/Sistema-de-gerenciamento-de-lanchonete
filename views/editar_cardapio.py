@@ -204,7 +204,10 @@ class EditarCardapioWindow(tk.Frame):
         item = self._item_selecionado()
         if item is None:
             return
-        self.controller.remover_item(item)
+        erro = self.controller.remover_item(item)
+        if erro:
+            self.label_erro.config(text=erro)
+            return
         self.desenhar_itens()
 
     def salvar(self):

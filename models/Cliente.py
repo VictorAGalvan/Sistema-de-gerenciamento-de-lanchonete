@@ -12,7 +12,7 @@ class Cliente(Base):
     _cpf: Mapped[str] = mapped_column("cpf", String, nullable=False, unique=True)
     _telefone: Mapped[str] = mapped_column("telefone", String, nullable=True)
     _senha: Mapped[str] = mapped_column(
-        "senha", String, nullable=False, default="trocar123"
+        "senha", String, nullable=False, default="trocar123", server_default="trocar123"
     )
 
     def __init__(

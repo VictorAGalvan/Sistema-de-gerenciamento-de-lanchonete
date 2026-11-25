@@ -25,12 +25,6 @@ SessionLocal = sessionmaker(bind=engine)
 
 
 def criar_banco():
-    try:
-        with engine.connect():
-            return  # banco existe e aceita conexão
-    except OperationalError:
-        pass
-
     admin_engine = create_engine(ADMIN_URL, isolation_level="AUTOCOMMIT")
     with admin_engine.connect() as connection:
         existe = connection.execute(

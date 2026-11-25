@@ -3,12 +3,14 @@ from controler.login_controller import LoginController
 
 
 class LoginFrame(tk.Frame):
-    def __init__(self, parent, app):
+    def __init__(self, parent, app, mensagem=None):
         super().__init__(parent)
         self.app = app
         self.controller = LoginController()
         self.cliente = None
         self.create_widgets()
+        if mensagem:
+            self.label_erro.config(text=mensagem, fg="green")
 
     def create_widgets(self):
         self.label_usuario = tk.Label(self, text="Usuário:")
@@ -32,14 +34,20 @@ class LoginFrame(tk.Frame):
         self.botao_registrar = tk.Button(self, text="Registrar", command=self.abrir_registro)
         self.botao_registrar.pack(pady=10)
 
+        # Enter faz login; cursor ja começa no campo de usuario
+        self.entry_usuario.bind("<Return>", lambda e: self.verificar_login())
+        self.entry_senha.bind("<Return>", lambda e: self.verificar_login())
+        self.entry_usuario.focus_set()
+
     def abrir_registro(self):
-        Registrar(self, self.controller)
+        self.app.mostrar(Registrar)
 
     def verificar_login(self):
         usuario = self.entry_usuario.get()
         senha = self.entry_senha.get()
 
         cliente, perfil = self.controller.autenticar(usuario, senha)
+        self.label_erro.config(text="", fg="red")
         if perfil == "admin":
             self.app.abrir_sistema_admin()
             return
@@ -51,53 +59,60 @@ class LoginFrame(tk.Frame):
             self.label_erro.config(text="Usuário ou senha incorretos.")
 
 
-class Registrar(tk.Toplevel):
-    def __init__(self, master=None, controller=None):
-        super().__init__(master)
-        self.title("Registrar")
-        self.geometry("300x200")
-        self.controller = controller or LoginController()
+class Registrar(tk.Frame):
+    """Tela de cadastro de cliente (mesmo padrao das outras telas)."""
+
+    def __init__(self, parent, app):
+        super().__init__(parent)
+        self.app = app
+        self.controller = LoginController()
         self.create_widgets()
 
     def create_widgets(self):
-        self.label_nome = tk.Label(self, text="Nome:")
-        self.label_nome.pack(pady=5)
+        tk.Label(self, text="Criar conta", font=("Segoe UI", 16, "bold")).pack(pady=(10, 4))
+        tk.Label(self, text="Preencha os dados para se cadastrar.").pack(pady=(0, 10))
 
-        self.entry_nome = tk.Entry(self)
-        self.entry_nome.pack(pady=5)
+        # rodape empacotado antes para nunca sumir da tela
+        rodape = tk.Frame(self)
+        rodape.pack(side="bottom", fill="x")
 
-        self.label_cpf = tk.Label(self, text="CPF:")
-        self.label_cpf.pack(pady=5)
+        self.label_erro = tk.Label(rodape, text="", fg="red")
+        self.label_erro.pack(pady=2)
 
-        self.entry_cpf = tk.Entry(self)
-        self.entry_cpf.pack(pady=5)
+        botoes = tk.Frame(rodape)
+        botoes.pack(pady=10)
+        tk.Button(botoes, text="Registrar", command=self.registrar_cliente).pack(side="left", padx=5)
+        tk.Button(botoes, text="Voltar", command=self.voltar).pack(side="left", padx=5)
 
-        self.label_telefone = tk.Label(self, text="Telefone:")
-        self.label_telefone.pack(pady=5)
+        form = tk.Frame(self)
+        form.pack(pady=5)
 
-        self.entry_telefone = tk.Entry(self)
-        self.entry_telefone.pack(pady=5)
+        campos = [
+            ("Nome:", "entry_nome", ""),
+            ("CPF:", "entry_cpf", ""),
+            ("Telefone:", "entry_telefone", ""),
+            ("Senha:", "entry_senha", "*"),
+        ]
+        for linha, (rotulo, atributo, mascara) in enumerate(campos):
+            tk.Label(form, text=rotulo).grid(row=linha, column=0, sticky="e", padx=3, pady=4)
+            entry = tk.Entry(form, width=28, show=mascara)
+            entry.grid(row=linha, column=1, pady=4)
+            entry.bind("<Return>", lambda e: self.registrar_cliente())
+            setattr(self, atributo, entry)
 
-        self.label_senha = tk.Label(self, text="Senha:")
-        self.label_senha.pack(pady=5)
+        self.entry_nome.focus_set()
 
-        self.entry_senha = tk.Entry(self, show="*")
-        self.entry_senha.pack(pady=5)
-
-        self.label_erro = tk.Label(self, text="", fg="red")
-        self.label_erro.pack(pady=5)
-
-        self.botao_registrar = tk.Button(self, text="Registrar", command=self.registrar_cliente)
-        self.botao_registrar.pack(pady=10)
+    def voltar(self):
+        self.app.mostrar(LoginFrame)
 
     def registrar_cliente(self):
-        nome = self.entry_nome.get()
-        senha = self.entry_senha.get()
-        cpf = self.entry_cpf.get()
-        telefone = self.entry_telefone.get()
-
-        erro = self.controller.registrar(nome, senha, cpf, telefone)
+        erro = self.controller.registrar(
+            self.entry_nome.get(),
+            self.entry_senha.get(),
+            self.entry_cpf.get(),
+            self.entry_telefone.get(),
+        )
         if erro:
             self.label_erro.config(text=erro)
             return
-        self.destroy()
+        self.app.mostrar(LoginFrame, mensagem="Cadastro realizado! Faça login.")

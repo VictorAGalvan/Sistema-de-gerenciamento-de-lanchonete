@@ -42,8 +42,8 @@ class CardapioDAO:
 
     def set_ativo(self, id_cardapio: int):
         with SessionLocal() as session:
-            session.execute(update(Cardapio).values(ativo=False))
+            session.execute(update(Cardapio).values(_ativo=False))
             session.execute(
-                update(Cardapio).where(Cardapio._id == id_cardapio).values(ativo=True)
+                update(Cardapio).where(Cardapio._id == id_cardapio).values(_ativo=True)
             )
             session.commit()

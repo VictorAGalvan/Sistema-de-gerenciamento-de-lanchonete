@@ -1,5 +1,7 @@
 from datetime import date, datetime
 
+from sqlalchemy.exc import IntegrityError
+
 from controler.cardapio_controler import CardapioControler
 from controler.ingrediente_controler import IngredienteController
 from controler.itens_cardapio_controler import ItensCardapioControler
@@ -50,11 +52,15 @@ class CardapioAdminController:
         return None
 
     def remover_item(self, item):
-        self.itens.remover_item_cardapio(item)
+        try:
+            self.itens.remover_item_cardapio(item)
+        except IntegrityError:
+            return "Não foi possível remover: este item já foi usado em pedidos."
+        return None
 
     def criar_item(self, cardapio, nome, texto_preco, categoria, ingredientes):
         try:
-            preco = float(texto_preco)
+            preco = float(texto_preco.strip().replace(",", "."))
         except ValueError:
             return "Preço inválido."
 
@@ -71,7 +77,7 @@ class CardapioAdminController:
 
     def salvar_item(self, item, nome, texto_preco, categoria, ingredientes):
         try:
-            preco = float(texto_preco)
+            preco = float(texto_preco.strip().replace(",", "."))
         except ValueError:
             return "Preço inválido."
 

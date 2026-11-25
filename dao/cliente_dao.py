@@ -18,6 +18,10 @@ class ClienteDAO:
         with SessionLocal() as session:
             return session.scalars(select(Cliente).where(Cliente._nome == nome)).first()
 
+    def selectCpf(self, cpf):
+        with SessionLocal() as session:
+            return session.scalars(select(Cliente).where(Cliente._cpf == cpf)).first()
+
     def insert(self, cliente):
         with SessionLocal() as session:
             session.add(cliente)

@@ -14,6 +14,9 @@ class ClienteControler:
     def buscar_cliente_por_nome(self, nome):
         return self.dao.selectNome(nome)
 
+    def buscar_cliente_por_cpf(self, cpf):
+        return self.dao.selectCpf(cpf)
+
     def criar_cliente(self, cliente):
         return self.dao.insert(cliente)
 
@@ -21,4 +24,4 @@ class ClienteControler:
         return self.dao.update(cliente)
 
     def remover_cliente(self, cliente):
-        return self.dao.delete(cliente)
+        return self.dao.delete(cliente.id)

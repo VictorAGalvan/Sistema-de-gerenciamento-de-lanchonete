@@ -9,7 +9,7 @@ item_ingrediente_cardapio = Table(
     "itemingredientecardapio",
     Base.metadata,
     Column("id", Integer, primary_key=True, autoincrement=True),
-    Column("iditensCardapio", ForeignKey("itenscardapio.id"), nullable=False),
+    Column("iditenscardapio", ForeignKey("itenscardapio.id"), nullable=False),
     Column("idingredientes", ForeignKey("ingredientes.id"), nullable=False),
 )
 

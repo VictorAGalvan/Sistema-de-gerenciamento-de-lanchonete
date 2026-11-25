@@ -8,7 +8,7 @@ class IngredienteDAO:
 
     def select(self):
         with SessionLocal() as session:
-            return session.scalars(select(Ingrediente)).all()
+            return session.scalars(select(Ingrediente).order_by(Ingrediente._id)).all()
 
     def selectID(self, id_ingrediente):
         with SessionLocal() as session:
@@ -23,7 +23,12 @@ class IngredienteDAO:
 
     def update(self, ingrediente: Ingrediente):
         with SessionLocal() as session:
-            session.merge(ingrediente)
+            session.execute(
+                update(Ingrediente)
+                .where(Ingrediente._id == ingrediente.id)
+                .values(_nome=ingrediente.nome, _unidade=ingrediente.unidade)
+                .execution_options(synchronize_session=False)
+            )
             session.commit()
         return ingrediente
 
@@ -32,7 +37,7 @@ class IngredienteDAO:
             session.execute(
                 update(Ingrediente)
                 .where(Ingrediente._id == id_ingrediente)
-                .values(quantidade=Ingrediente._quantidade + quantidade)
+                .values(_quantidade=Ingrediente._quantidade + quantidade)
                 .execution_options(synchronize_session=False)
             )
             session.commit()
