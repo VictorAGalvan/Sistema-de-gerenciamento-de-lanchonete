@@ -138,6 +138,8 @@ class ItensDetail(tk.Frame):
         self.ingredientes = list(self.item_cardapio.ingredientes)
         self.selecionados = {}
         self.quantidades = {}
+        self.checkboxes = {}
+        self.spinboxes = {}
         self.create_widgets()
 
     def voltar(self):
@@ -152,6 +154,21 @@ class ItensDetail(tk.Frame):
             self,
             text="Marque os ingredientes e ajuste a quantidade de cada um.",
         ).pack(pady=2)
+
+        barra_selecao = tk.Frame(self)
+        barra_selecao.pack(fill="x", padx=8, pady=4)
+        self.label_selecao = tk.Label(barra_selecao, anchor="w")
+        self.label_selecao.pack(side="left")
+        tk.Button(
+            barra_selecao,
+            text="Limpar seleção",
+            command=lambda: self._definir_selecao(False),
+        ).pack(side="right", padx=2)
+        tk.Button(
+            barra_selecao,
+            text="Marcar todos",
+            command=lambda: self._definir_selecao(True),
+        ).pack(side="right", padx=2)
 
         rodape = tk.Frame(self)
         rodape.pack(side="bottom", fill="x")
@@ -177,50 +194,130 @@ class ItensDetail(tk.Frame):
         canvas.configure(yscrollcommand=barra.set)
         barra.pack(side="right", fill="y")
         canvas.pack(side="left", fill="both", expand=True)
+        self.canvas_ingredientes = canvas
 
         lista = tk.Frame(canvas)
         janela_lista = canvas.create_window((0, 0), window=lista, anchor="nw")
         lista.bind(
             "<Configure>",
-            lambda evento: canvas.configure(
-                scrollregion=(0, 0, evento.width, evento.height)
-            ),
+            lambda _evento: canvas.configure(scrollregion=canvas.bbox("all")),
         )
         canvas.bind(
             "<Configure>",
-            lambda evento: canvas.itemconfigure(janela_lista, width=evento.width),
+            lambda evento: self._ajustar_lista(
+                evento.width, canvas, janela_lista
+            ),
         )
+        self._vincular_rolagem(canvas)
+        self._vincular_rolagem(lista)
 
         tk.Label(lista, text="Ingrediente", anchor="w").grid(
             row=0, column=0, sticky="ew", padx=3
         )
         tk.Label(lista, text="Qtd.").grid(row=0, column=1, padx=3)
+        ingredientes_selecionados = {
+            ingrediente.id for ingrediente in self.item_pedido.ingredientes
+        }
+        if not self.ingredientes:
+            tk.Label(
+                lista,
+                text="Este item não possui ingredientes cadastrados.",
+                anchor="w",
+            ).grid(row=1, column=0, columnspan=2, sticky="ew", padx=3, pady=8)
+
         for i, ingrediente in enumerate(self.ingredientes):
-            selecionado = ingrediente in self.item_pedido.ingredientes
+            selecionado = ingrediente.id in ingredientes_selecionados
             self.selecionados[ingrediente.id] = tk.IntVar(
                 value=1 if selecionado else 0
             )
             self.quantidades[ingrediente.id] = tk.StringVar(
                 value=str(
-                    self.item_pedido.quantidades_ingredientes.get(
-                        ingrediente.id, 1
-                    )
+                    self.item_pedido.quantidades_ingredientes.get(ingrediente.id, 1)
+                    if selecionado
+                    else 0
                 )
             )
-            tk.Checkbutton(
+            checkbox = tk.Checkbutton(
                 lista,
                 text=f"{ingrediente.nome} ({ingrediente.unidade})",
                 variable=self.selecionados[ingrediente.id],
                 anchor="w",
-            ).grid(row=i + 1, column=0, sticky="ew", padx=3)
-            tk.Spinbox(
+                command=lambda id_ingrediente=ingrediente.id: self._atualizar_linha(
+                    id_ingrediente
+                ),
+            )
+            checkbox.grid(row=i + 1, column=0, sticky="ew", padx=3)
+            self.checkboxes[ingrediente.id] = checkbox
+
+            spinbox = tk.Spinbox(
                 lista,
-                from_=1,
+                from_=0,
                 to=999,
                 width=5,
                 textvariable=self.quantidades[ingrediente.id],
-            ).grid(row=i + 1, column=1, padx=3)
+                state="normal" if selecionado else "disabled",
+            )
+            spinbox.grid(row=i + 1, column=1, padx=3)
+            self.spinboxes[ingrediente.id] = spinbox
+            self._vincular_rolagem(checkbox)
+            self._vincular_rolagem(spinbox)
+
         lista.columnconfigure(0, weight=1)
+        self._atualizar_contagem()
+
+    def _ajustar_lista(self, largura, canvas, janela_lista):
+        canvas.itemconfigure(janela_lista, width=largura)
+        largura_texto = max(140, largura - 125)
+        for checkbox in self.checkboxes.values():
+            checkbox.configure(wraplength=largura_texto)
+
+    def _vincular_rolagem(self, widget):
+        widget.bind("<MouseWheel>", self._rolar_ingredientes)
+        widget.bind("<Button-4>", self._rolar_ingredientes)
+        widget.bind("<Button-5>", self._rolar_ingredientes)
+
+    def _rolar_ingredientes(self, evento):
+        botao = getattr(evento, "num", 0)
+        if botao == 4:
+            unidades = -1
+        elif botao == 5:
+            unidades = 1
+        else:
+            delta = getattr(evento, "delta", 0) or 0
+            unidades = int(-delta / 120)
+            if delta and not unidades:
+                unidades = -1 if delta > 0 else 1
+
+        if unidades:
+            self.canvas_ingredientes.yview_scroll(unidades, "units")
+        return "break"
+
+    def _atualizar_linha(self, id_ingrediente):
+        selecionado = self.selecionados[id_ingrediente].get()
+        if selecionado:
+            try:
+                quantidade = int(self.quantidades[id_ingrediente].get())
+            except ValueError:
+                quantidade = 0
+            if quantidade <= 0:
+                self.quantidades[id_ingrediente].set("1")
+            estado = "normal"
+        else:
+            self.quantidades[id_ingrediente].set("0")
+            estado = "disabled"
+        self.spinboxes[id_ingrediente].configure(state=estado)
+        self._atualizar_contagem()
+
+    def _definir_selecao(self, selecionado):
+        for id_ingrediente, variavel in self.selecionados.items():
+            variavel.set(1 if selecionado else 0)
+            self._atualizar_linha(id_ingrediente)
+
+    def _atualizar_contagem(self):
+        total = sum(variavel.get() for variavel in self.selecionados.values())
+        self.label_selecao.config(
+            text=f"Ingredientes selecionados: {total}"
+        )
 
     def salvar(self):
         selecionados = []

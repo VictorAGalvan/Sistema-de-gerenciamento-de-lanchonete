@@ -150,6 +150,7 @@ class IngredientesPedido(tk.Frame):
         self.app = app
         self.pedido = pedido
         self.controller = PedidosViewController()
+        self.labels_com_quebra = []
         self.create_widgets()
 
     def create_widgets(self):
@@ -162,17 +163,59 @@ class IngredientesPedido(tk.Frame):
             command=lambda: self.app.mostrar(DetalhesPedido, pedido=self.pedido)
         ).pack(pady=10)
 
-        self.tabela = Tabela(self, [
-            ("qtd", "Qtd", 40),
-            ("item", "Item", 110),
-            ("ingredientes", "Ingredientes", 180),
-            ("obs", "Observação", 150),
-        ])
-        self.tabela.pack(fill="both", expand=True, padx=5)
+        frame_lista = tk.Frame(self)
+        frame_lista.pack(fill="both", expand=True, padx=5)
+
+        canvas = tk.Canvas(frame_lista, highlightthickness=0)
+        barra = tk.Scrollbar(frame_lista, command=canvas.yview)
+        canvas.configure(yscrollcommand=barra.set)
+        barra.pack(side="right", fill="y")
+        canvas.pack(side="left", fill="both", expand=True)
+
+        lista = tk.Frame(canvas)
+        janela_lista = canvas.create_window((0, 0), window=lista, anchor="nw")
+        lista.bind(
+            "<Configure>",
+            lambda _evento: canvas.configure(scrollregion=canvas.bbox("all")),
+        )
+        canvas.bind(
+            "<Configure>",
+            lambda evento: self._ajustar_largura(
+                evento.width, canvas, janela_lista
+            ),
+        )
 
         for item in self.pedido.itens_pedidos:
             ingredientes, observacao = self.controller.ingredientes_e_observacao(item)
-            self.tabela.tree.insert(
-                "", "end",
-                values=(item.quantidade, item.nome, ingredientes, observacao)
+            cartao = tk.Frame(lista, relief="groove", borderwidth=1, padx=8, pady=6)
+            cartao.pack(fill="x", padx=4, pady=4)
+            tk.Label(
+                cartao,
+                text=f"{item.quantidade} x {item.nome}",
+                font=("Segoe UI", 10, "bold"),
+                anchor="w",
+            ).pack(fill="x")
+            self._adicionar_linha(cartao, "Ingredientes", ingredientes)
+            self._adicionar_linha(cartao, "Observação", observacao)
+
+        if not self.pedido.itens_pedidos:
+            tk.Label(lista, text="Este pedido não possui itens.", anchor="w").pack(
+                fill="x", padx=8, pady=8
             )
+
+    def _adicionar_linha(self, parent, titulo, valor):
+        label = tk.Label(
+            parent,
+            text=f"{titulo}: {valor}",
+            justify="left",
+            anchor="w",
+            wraplength=500,
+        )
+        label.pack(fill="x", anchor="w", pady=2)
+        self.labels_com_quebra.append(label)
+
+    def _ajustar_largura(self, largura, canvas, janela_lista):
+        canvas.itemconfigure(janela_lista, width=largura)
+        largura_texto = max(160, largura - 36)
+        for label in self.labels_com_quebra:
+            label.configure(wraplength=largura_texto)
