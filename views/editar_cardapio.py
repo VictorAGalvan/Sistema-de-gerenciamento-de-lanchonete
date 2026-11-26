@@ -12,20 +12,100 @@ class SeletorIngredientes(tk.Frame):
         self.controller = CardapioAdminController()
         self.ingredientes = self.controller.listar_ingredientes()
         ids = {ing.id for ing in selecionados}
+        self.selecoes = {}
+        self.quantidades = {}
+        self.spinboxes = {}
 
-        self.listbox = tk.Listbox(self, selectmode="multiple", height=5, exportselection=False)
-        barra = tk.Scrollbar(self, command=self.listbox.yview)
-        self.listbox.config(yscrollcommand=barra.set)
+        tk.Label(
+            self,
+            text="Quantidades",
+            anchor="w",
+        ).pack(fill="x", padx=3, pady=2)
+
+        canvas = tk.Canvas(self, height=180, highlightthickness=0)
+        barra = tk.Scrollbar(self, command=canvas.yview)
+        canvas.configure(yscrollcommand=barra.set)
         barra.pack(side="right", fill="y")
-        self.listbox.pack(side="left", fill="both", expand=True)
+        canvas.pack(side="left", fill="both", expand=True)
 
-        for i, ing in enumerate(self.ingredientes):
-            self.listbox.insert("end", ing.nome)
-            if ing.id in ids:
-                self.listbox.selection_set(i)
+        lista = tk.Frame(canvas)
+        janela_lista = canvas.create_window((0, 0), window=lista, anchor="nw")
+        lista.bind(
+            "<Configure>",
+            lambda _evento: canvas.configure(scrollregion=canvas.bbox("all")),
+        )
+        canvas.bind(
+            "<Configure>",
+            lambda evento: canvas.itemconfigure(janela_lista, width=evento.width),
+        )
+
+        tk.Label(lista, text="Ingrediente", anchor="w").grid(
+            row=0, column=0, sticky="ew", padx=3
+        )
+        tk.Label(lista, text="Quantidade").grid(
+            row=0, column=1, padx=3
+        )
+
+        if not self.ingredientes:
+            tk.Label(
+                lista,
+                text="Cadastre ingredientes antes de editar a receita.",
+                anchor="w",
+            ).grid(row=1, column=0, columnspan=2, sticky="ew", padx=3, pady=8)
+
+        for i, ingrediente in enumerate(self.ingredientes):
+            selecionado = ingrediente.id in ids
+            self.selecoes[ingrediente.id] = tk.IntVar(
+                master=self, value=1 if selecionado else 0
+            )
+            self.quantidades[ingrediente.id] = tk.StringVar(
+                master=self, value="1" if selecionado else "0"
+            )
+            checkbox = tk.Checkbutton(
+                lista,
+                text=f"{ingrediente.nome} ({ingrediente.unidade})",
+                variable=self.selecoes[ingrediente.id],
+                anchor="w",
+                command=lambda id_ingrediente=ingrediente.id: self._atualizar_linha(
+                    id_ingrediente
+                ),
+            )
+            checkbox.grid(row=i + 1, column=0, sticky="ew", padx=3)
+
+            spinbox = tk.Spinbox(
+                lista,
+                from_=0,
+                to=999,
+                width=5,
+                textvariable=self.quantidades[ingrediente.id],
+                state="normal" if selecionado else "disabled",
+            )
+            spinbox.grid(row=i + 1, column=1, padx=3)
+            self.spinboxes[ingrediente.id] = spinbox
+
+        lista.columnconfigure(0, weight=1)
 
     def selecionados(self):
-        return [self.ingredientes[i] for i in self.listbox.curselection()]
+        return [
+            ingrediente
+            for ingrediente in self.ingredientes
+            if self.selecoes[ingrediente.id].get()
+        ]
+
+    def _atualizar_linha(self, id_ingrediente):
+        selecionado = self.selecoes[id_ingrediente].get()
+        if selecionado:
+            try:
+                quantidade = int(self.quantidades[id_ingrediente].get())
+            except ValueError:
+                quantidade = 0
+            if quantidade <= 0:
+                self.quantidades[id_ingrediente].set("1")
+            estado = "normal"
+        else:
+            self.quantidades[id_ingrediente].set("0")
+            estado = "disabled"
+        self.spinboxes[id_ingrediente].configure(state=estado)
 class ListaCardapios(tk.Frame):
     def __init__(self, parent, app):
         super().__init__(parent)
