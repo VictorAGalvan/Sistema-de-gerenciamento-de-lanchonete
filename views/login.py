@@ -13,26 +13,27 @@ class LoginFrame(tk.Frame):
             self.label_erro.config(text=mensagem, fg="green")
 
     def create_widgets(self):
-        self.label_usuario = tk.Label(self, text="Usuário:")
-        self.label_usuario.pack(pady=5)
+        card = tk.Frame(self, highlightbackground="#cfd8dc", highlightthickness=1, padx=44, pady=30)
+        card.place(relx=0.5, rely=0.42, anchor="center")
+        tk.Label(card, text="Entrar", font=("Segoe UI", 20, "bold")).pack()
+        tk.Label(card, text="Acesse sua conta para continuar", fg="#607d8b").pack(pady=(0, 16))
 
-        self.entry_usuario = tk.Entry(self)
-        self.entry_usuario.pack(pady=5)
+        tk.Label(card, text="Usuário").pack(anchor="w")
+        self.entry_usuario = tk.Entry(card, width=30, font=("Segoe UI", 11))
+        self.entry_usuario.pack(pady=(2, 10), ipady=4)
 
-        self.label_senha = tk.Label(self, text="Senha:")
-        self.label_senha.pack(pady=5)
+        tk.Label(card, text="Senha").pack(anchor="w")
+        self.entry_senha = tk.Entry(card, width=30, show="*", font=("Segoe UI", 11))
+        self.entry_senha.pack(pady=(2, 6), ipady=4)
 
-        self.entry_senha = tk.Entry(self, show="*")
-        self.entry_senha.pack(pady=5)
+        self.label_erro = tk.Label(card, text="", fg="red")
+        self.label_erro.pack(pady=4)
 
-        self.label_erro = tk.Label(self, text="", fg="red")
-        self.label_erro.pack(pady=5)
+        self.botao_login = tk.Button(card, text="Login", name="principal", width=24, command=self.verificar_login)
+        self.botao_login.pack(pady=(6, 6))
 
-        self.botao_login = tk.Button(self, text="Login", command=self.verificar_login)
-        self.botao_login.pack(pady=10)
-
-        self.botao_registrar = tk.Button(self, text="Registrar", command=self.abrir_registro)
-        self.botao_registrar.pack(pady=10)
+        self.botao_registrar = tk.Button(card, text="Criar conta", name="secundario", width=36, command=self.abrir_registro)
+        self.botao_registrar.pack()
 
         # Enter faz login; cursor ja começa no campo de usuario
         self.entry_usuario.bind("<Return>", lambda e: self.verificar_login())
@@ -69,23 +70,13 @@ class Registrar(tk.Frame):
         self.create_widgets()
 
     def create_widgets(self):
-        tk.Label(self, text="Criar conta", font=("Segoe UI", 16, "bold")).pack(pady=(10, 4))
-        tk.Label(self, text="Preencha os dados para se cadastrar.").pack(pady=(0, 10))
+        card = tk.Frame(self, highlightbackground="#cfd8dc", highlightthickness=1, padx=44, pady=30)
+        card.place(relx=0.5, rely=0.42, anchor="center")
+        tk.Label(card, text="Criar conta", font=("Segoe UI", 20, "bold")).pack(pady=(0, 2))
+        tk.Label(card, text="Preencha os dados para se cadastrar.", fg="#607d8b").pack(pady=(0, 12))
 
-        # rodape empacotado antes para nunca sumir da tela
-        rodape = tk.Frame(self)
-        rodape.pack(side="bottom", fill="x")
-
-        self.label_erro = tk.Label(rodape, text="", fg="red")
-        self.label_erro.pack(pady=2)
-
-        botoes = tk.Frame(rodape)
-        botoes.pack(pady=10)
-        tk.Button(botoes, text="Registrar", command=self.registrar_cliente).pack(side="left", padx=5)
-        tk.Button(botoes, text="Voltar", command=self.voltar).pack(side="left", padx=5)
-
-        form = tk.Frame(self)
-        form.pack(pady=5)
+        form = tk.Frame(card)
+        form.pack()
 
         campos = [
             ("Nome:", "entry_nome", ""),
@@ -94,11 +85,19 @@ class Registrar(tk.Frame):
             ("Senha:", "entry_senha", "*"),
         ]
         for linha, (rotulo, atributo, mascara) in enumerate(campos):
-            tk.Label(form, text=rotulo).grid(row=linha, column=0, sticky="e", padx=3, pady=4)
-            entry = tk.Entry(form, width=28, show=mascara)
-            entry.grid(row=linha, column=1, pady=4)
+            tk.Label(form, text=rotulo).grid(row=linha, column=0, sticky="e", padx=(0, 8), pady=6)
+            entry = tk.Entry(form, width=28, show=mascara, font=("Segoe UI", 11))
+            entry.grid(row=linha, column=1, pady=6, ipady=4)
             entry.bind("<Return>", lambda e: self.registrar_cliente())
             setattr(self, atributo, entry)
+
+        self.label_erro = tk.Label(card, text="", fg="red")
+        self.label_erro.pack(pady=4)
+
+        botoes = tk.Frame(card)
+        botoes.pack(pady=(6, 0))
+        tk.Button(botoes, text="Voltar", name="secundario", width=14, command=self.voltar).pack(side="left", padx=5)
+        tk.Button(botoes, text="Registrar", name="principal", width=12, command=self.registrar_cliente).pack(side="left", padx=5)
 
         self.entry_nome.focus_set()
 

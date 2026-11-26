@@ -5,7 +5,7 @@ from tkinter import ttk
 class Tabela(tk.Frame):
 
     def __init__(self, parent, colunas, height=8):
-        super().__init__(parent)
+        super().__init__(parent, highlightbackground="#cfd8dc", highlightthickness=1)
         self.tree = ttk.Treeview(
             self,
             columns=[c[0] for c in colunas],

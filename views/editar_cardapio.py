@@ -115,21 +115,27 @@ class ListaCardapios(tk.Frame):
         self.create_widgets()
 
     def create_widgets(self):
-        tk.Label(self, text="Cardápios disponíveis:", font=("Arial", 10, "bold")).pack(pady=5)
+        topo = tk.Frame(self)
+        topo.pack(fill="x")
+        tk.Button(topo, text="← Voltar", name="secundario", command=self.app.voltar_menu).pack(side="left")
+        titulos = tk.Frame(topo)
+        titulos.pack(side="left", padx=16)
+        tk.Label(titulos, text="Cardápios disponíveis", font=("Segoe UI", 17, "bold"), fg="#263238").pack(anchor="w")
+        tk.Label(titulos, text="Escolha um cardápio para editar ou tornar ativo.", fg="#607d8b").pack(anchor="w")
+        tk.Frame(self, height=1, bg="#cfd8dc").pack(fill="x", pady=(12, 12))
 
         # rodapé empacotado antes da tabela para nunca sumir da tela
         rodape = tk.Frame(self)
         rodape.pack(side="bottom", fill="x")
 
-        self.label_erro = tk.Label(rodape, text="", fg="red")
-        self.label_erro.pack(pady=2)
+        self.label_erro = tk.Label(rodape, text="", fg="red", anchor="w")
+        self.label_erro.pack(fill="x", padx=5, pady=(6, 0))
 
         botoes = tk.Frame(rodape)
-        botoes.pack(pady=10)
-        tk.Button(botoes, text="Editar", command=self.abrir_editar).pack(side="left", padx=5)
-        tk.Button(botoes, text="Tornar Ativo", command=self.tornar_ativo).pack(side="left", padx=5)
-        tk.Button(botoes, text="Novo Cardápio", command=self.novo_cardapio).pack(side="left", padx=5)
-        tk.Button(botoes, text="Voltar", command=self.app.voltar_menu).pack(side="left", padx=5)
+        botoes.pack(anchor="e", padx=5, pady=10)
+        tk.Button(botoes, text="Novo Cardápio", name="secundario", command=self.novo_cardapio).pack(side="left", padx=(0, 8))
+        tk.Button(botoes, text="Tornar Ativo", name="secundario2", command=self.tornar_ativo).pack(side="left", padx=(0, 8))
+        tk.Button(botoes, text="Editar", name="principal", command=self.abrir_editar).pack(side="left")
 
         self.tabela = Tabela(self, [
             ("id", "ID", 40),
@@ -138,6 +144,7 @@ class ListaCardapios(tk.Frame):
             ("ativo", "Ativo", 60),
         ])
         self.tabela.pack(fill="both", expand=True, padx=5)
+        self.tabela.tree.tag_configure("ativo", background="#dcf1e3")
         self.desenhar_lista()
 
     def desenhar_lista(self):
@@ -155,8 +162,9 @@ class ListaCardapios(tk.Frame):
                     cardapio.id,
                     f"v{cardapio.versao}",
                     cardapio.data.strftime("%d/%m/%Y"),
-                    "Sim" if cardapio.id == ativo_id else "",
-                )
+                    "✔ Ativo" if cardapio.id == ativo_id else "",
+                ),
+                tags=("ativo",) if cardapio.id == ativo_id else (),
             )
 
     def _cardapio_selecionado(self):
@@ -196,37 +204,45 @@ class EditarCardapioWindow(tk.Frame):
 
     def create_widgets(self):
         titulo = "Novo Cardápio" if self.eh_novo else "Editar Cardápio"
-        tk.Label(self, text=titulo, font=("Arial", 10, "bold")).pack(pady=5)
+        topo = tk.Frame(self)
+        topo.pack(fill="x")
+        tk.Button(topo, text="← Voltar", name="secundario", command=lambda: self.app.mostrar(ListaCardapios)).pack(side="left")
+        titulos = tk.Frame(topo)
+        titulos.pack(side="left", padx=16)
+        tk.Label(titulos, text=titulo, font=("Segoe UI", 17, "bold"), fg="#263238").pack(anchor="w")
+        tk.Frame(self, height=1, bg="#cfd8dc").pack(fill="x", pady=(12, 12))
 
-        tk.Label(self, text="Data (dd/mm/aaaa):").pack(pady=2)
-        self.entry_data = tk.Entry(self)
+        form = tk.LabelFrame(
+            self, text=" Dados do cardápio ", font=("Segoe UI", 9, "bold"),
+            fg="#607d8b", padx=14, pady=8,
+        )
+        form.pack(fill="x", padx=5, pady=(0, 10))
+        tk.Label(form, text="Data (dd/mm/aaaa)").grid(row=0, column=0, sticky="w")
+        self.entry_data = tk.Entry(form, width=16)
         self.entry_data.insert(0, self.cardapio.data.strftime("%d/%m/%Y"))
-        self.entry_data.pack(pady=2)
+        self.entry_data.grid(row=1, column=0, sticky="w", padx=(0, 16), ipady=3)
 
-        tk.Label(self, text="Versão:").pack(pady=2)
-        self.entry_versao = tk.Entry(self)
+        tk.Label(form, text="Versão").grid(row=0, column=1, sticky="w")
+        self.entry_versao = tk.Entry(form, width=12)
         self.entry_versao.insert(0, self.cardapio.versao)
-        self.entry_versao.pack(pady=2)
+        self.entry_versao.grid(row=1, column=1, sticky="w", padx=(0, 16), ipady=3)
 
-        tk.Label(self, text="Itens:").pack(pady=2)
+        tk.Button(form, text="Salvar Cardápio", name="principal", command=self.salvar).grid(row=1, column=2, sticky="w")
+
+        tk.Label(self, text="Itens do cardápio", anchor="w", font=("Segoe UI", 10, "bold")).pack(fill="x", padx=5, pady=(0, 4))
 
         
         rodape = tk.Frame(self)
         rodape.pack(side="bottom", fill="x")
 
-        self.label_erro = tk.Label(rodape, text="", fg="red")
-        self.label_erro.pack(pady=2)
+        self.label_erro = tk.Label(rodape, text="", fg="red", anchor="w")
+        self.label_erro.pack(fill="x", padx=5, pady=(6, 0))
 
         botoes_item = tk.Frame(rodape)
-        botoes_item.pack(pady=5)
-        tk.Button(botoes_item, text="Adicionar Item", command=self.adicionar_item).pack(side="left", padx=3)
-        tk.Button(botoes_item, text="Editar Item", command=self.editar_item).pack(side="left", padx=3)
-        tk.Button(botoes_item, text="Remover Item", command=self.remover_item).pack(side="left", padx=3)
-
-        botoes = tk.Frame(rodape)
-        botoes.pack(pady=5)
-        tk.Button(botoes, text="Salvar Cardápio", command=self.salvar).pack(side="left", padx=5)
-        tk.Button(botoes, text="Voltar", command=lambda: self.app.mostrar(ListaCardapios)).pack(side="left", padx=5)
+        botoes_item.pack(fill="x", padx=5, pady=10)
+        tk.Button(botoes_item, text="Adicionar Item", command=self.adicionar_item).pack(side="left")
+        tk.Button(botoes_item, text="Remover Item", name="perigo", command=self.remover_item).pack(side="right")
+        tk.Button(botoes_item, text="Editar Item", name="secundario", command=self.editar_item).pack(side="right", padx=(0, 8))
 
         self.tabela = Tabela(self, [
             ("id", "ID", 40),
@@ -317,31 +333,36 @@ class NovoItemWindow(tk.Frame):
         self.create_widgets()
 
     def create_widgets(self):
-        tk.Label(self, text="Novo Item", font=("Arial", 10, "bold")).pack(pady=2)
+        topo = tk.Frame(self)
+        topo.pack(fill="x")
+        tk.Button(topo, text="← Voltar", name="secundario", command=self.voltar).pack(side="left")
+        titulos = tk.Frame(topo)
+        titulos.pack(side="left", padx=16)
+        tk.Label(titulos, text="Novo Item", font=("Segoe UI", 17, "bold"), fg="#263238").pack(anchor="w")
+        tk.Frame(self, height=1, bg="#cfd8dc").pack(fill="x", pady=(12, 12))
 
-        tk.Label(self, text="Nome:").pack(pady=2)
+        tk.Label(self, text="Nome:", anchor="w").pack(fill="x", padx=5)
         self.entry_nome = tk.Entry(self)
-        self.entry_nome.pack(pady=2)
+        self.entry_nome.pack(fill="x", padx=5, pady=(0, 8), ipady=3)
 
-        tk.Label(self, text="Preço:").pack(pady=2)
+        tk.Label(self, text="Preço:", anchor="w").pack(fill="x", padx=5)
         self.entry_preco = tk.Entry(self)
-        self.entry_preco.pack(pady=2)
+        self.entry_preco.pack(fill="x", padx=5, pady=(0, 8), ipady=3)
 
-        tk.Label(self, text="Categoria:").pack(pady=2)
+        tk.Label(self, text="Categoria:", anchor="w").pack(fill="x", padx=5)
         self.entry_categoria = tk.Entry(self)
-        self.entry_categoria.pack(pady=2)
+        self.entry_categoria.pack(fill="x", padx=5, pady=(0, 8), ipady=3)
 
-        tk.Label(self, text="Ingredientes (clique para marcar/desmarcar):").pack(pady=2)
+        tk.Label(self, text="Ingredientes (clique para marcar/desmarcar):", anchor="w").pack(fill="x", padx=5)
         self.seletor = SeletorIngredientes(self)
         self.seletor.pack(fill="x", padx=5)
 
-        self.label_erro = tk.Label(self, text="", fg="red")
-        self.label_erro.pack(pady=2)
+        self.label_erro = tk.Label(self, text="", fg="red", anchor="w")
+        self.label_erro.pack(fill="x", padx=5, pady=(6, 0))
 
         botoes = tk.Frame(self)
-        botoes.pack(pady=5)
-        tk.Button(botoes, text="Adicionar", command=self.adicionar).pack(side="left", padx=5)
-        tk.Button(botoes, text="Voltar", command=self.voltar).pack(side="left", padx=5)
+        botoes.pack(anchor="e", padx=5, pady=10)
+        tk.Button(botoes, text="Adicionar", name="principal", command=self.adicionar).pack(side="left")
 
     def adicionar(self):
         erro = self.controller.criar_item(
@@ -370,34 +391,39 @@ class EditItemWindow(tk.Frame):
         self.create_widgets()
 
     def create_widgets(self):
-        tk.Label(self, text=f"Editar {self.item_cardapio.nome}", font=("Arial", 10, "bold")).pack(pady=2)
+        topo = tk.Frame(self)
+        topo.pack(fill="x")
+        tk.Button(topo, text="← Voltar", name="secundario", command=self.voltar).pack(side="left")
+        titulos = tk.Frame(topo)
+        titulos.pack(side="left", padx=16)
+        tk.Label(titulos, text=f"Editar {self.item_cardapio.nome}", font=("Segoe UI", 17, "bold"), fg="#263238").pack(anchor="w")
+        tk.Frame(self, height=1, bg="#cfd8dc").pack(fill="x", pady=(12, 12))
 
-        tk.Label(self, text="Nome:").pack(pady=2)
+        tk.Label(self, text="Nome:", anchor="w").pack(fill="x", padx=5)
         self.entry_nome = tk.Entry(self)
         self.entry_nome.insert(0, self.item_cardapio.nome)
-        self.entry_nome.pack(pady=2)
+        self.entry_nome.pack(fill="x", padx=5, pady=(0, 8), ipady=3)
 
-        tk.Label(self, text="Preço:").pack(pady=2)
+        tk.Label(self, text="Preço:", anchor="w").pack(fill="x", padx=5)
         self.entry_preco = tk.Entry(self)
         self.entry_preco.insert(0, str(self.item_cardapio.preco))
-        self.entry_preco.pack(pady=2)
+        self.entry_preco.pack(fill="x", padx=5, pady=(0, 8), ipady=3)
 
-        tk.Label(self, text="Categoria:").pack(pady=2)
+        tk.Label(self, text="Categoria:", anchor="w").pack(fill="x", padx=5)
         self.entry_categoria = tk.Entry(self)
         self.entry_categoria.insert(0, self.item_cardapio.categoria)
-        self.entry_categoria.pack(pady=2)
+        self.entry_categoria.pack(fill="x", padx=5, pady=(0, 8), ipady=3)
 
-        tk.Label(self, text="Ingredientes (clique para marcar/desmarcar):").pack(pady=2)
+        tk.Label(self, text="Ingredientes (clique para marcar/desmarcar):", anchor="w").pack(fill="x", padx=5)
         self.seletor = SeletorIngredientes(self, self.item_cardapio.ingredientes)
         self.seletor.pack(fill="x", padx=5)
 
-        self.label_erro = tk.Label(self, text="", fg="red")
-        self.label_erro.pack(pady=2)
+        self.label_erro = tk.Label(self, text="", fg="red", anchor="w")
+        self.label_erro.pack(fill="x", padx=5, pady=(6, 0))
 
         botoes = tk.Frame(self)
-        botoes.pack(pady=5)
-        tk.Button(botoes, text="Salvar", command=self.salvar).pack(side="left", padx=5)
-        tk.Button(botoes, text="Voltar", command=self.voltar).pack(side="left", padx=5)
+        botoes.pack(anchor="e", padx=5, pady=10)
+        tk.Button(botoes, text="Salvar", name="principal", command=self.salvar).pack(side="left")
 
     def voltar(self):
         self.app.mostrar(EditarCardapioWindow, cardapio=self.cardapio)

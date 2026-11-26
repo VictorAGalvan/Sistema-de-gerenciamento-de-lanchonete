@@ -22,38 +22,51 @@ class ListaIngredientes(tk.Frame):
         self.create_widgets()
 
     def create_widgets(self):
-        tk.Label(self, text="Ingredientes", font=("Arial", 10, "bold")).pack(pady=5)
+        topo = tk.Frame(self)
+        topo.pack(fill="x")
+        tk.Button(topo, text="← Voltar", name="secundario", command=self.app.voltar_menu).pack(side="left")
+        titulos = tk.Frame(topo)
+        titulos.pack(side="left", padx=16)
+        tk.Label(titulos, text="Ingredientes e estoque", font=("Segoe UI", 17, "bold"), fg="#263238").pack(anchor="w")
+        tk.Label(titulos, text="Clique em uma linha para editar ou reabastecer.", fg="#607d8b").pack(anchor="w")
+        tk.Frame(self, height=1, bg="#cfd8dc").pack(fill="x", pady=(12, 12))
 
         # rodapé empacotado antes da tabela para nunca sumir da tela
         rodape = tk.Frame(self)
         rodape.pack(side="bottom", fill="x")
 
-        form = tk.Frame(rodape)
-        form.pack(pady=2)
+        form = tk.LabelFrame(
+            rodape, text=" Dados do ingrediente ", font=("Segoe UI", 9, "bold"),
+            fg="#607d8b", padx=14, pady=6,
+        )
+        form.pack(fill="x", padx=5, pady=4)
 
-        tk.Label(form, text="Nome:").grid(row=0, column=0, sticky="e", padx=3, pady=1)
+        tk.Label(form, text="Nome:").grid(row=0, column=0, sticky="e", padx=(0, 8), pady=3)
         self.entry_nome = tk.Entry(form, width=25)
-        self.entry_nome.grid(row=0, column=1, pady=1)
+        self.entry_nome.grid(row=0, column=1, pady=3, ipady=3, sticky="w")
 
-        tk.Label(form, text="Unidade:").grid(row=1, column=0, sticky="e", padx=3, pady=1)
+        tk.Label(form, text="Unidade:").grid(row=1, column=0, sticky="e", padx=(0, 8), pady=3)
         self.entry_unidade = tk.Entry(form, width=25)
-        self.entry_unidade.grid(row=1, column=1, pady=1)
+        self.entry_unidade.grid(row=1, column=1, pady=3, ipady=3, sticky="w")
 
-        tk.Label(form, text="Estoque inicial / reposição:").grid(row=2, column=0, sticky="e", padx=3, pady=1)
+        tk.Label(form, text="Estoque inicial / reposição:").grid(row=2, column=0, sticky="e", padx=(0, 8), pady=3)
         self.entry_quantidade = tk.Entry(form, width=25)
-        self.entry_quantidade.grid(row=2, column=1, pady=1)
+        self.entry_quantidade.grid(row=2, column=1, pady=3, ipady=3, sticky="w")
 
-        self.label_erro = tk.Label(rodape, text="", fg="red")
-        self.label_erro.pack(pady=2)
+        self.label_erro = tk.Label(rodape, text="", fg="red", anchor="w")
+        self.label_erro.pack(fill="x", padx=5, pady=(2, 0))
 
         botoes = tk.Frame(rodape)
-        botoes.pack(pady=6)
-        tk.Button(botoes, text="Adicionar", command=self.adicionar).pack(side="left", padx=2)
-        tk.Button(botoes, text="Salvar", command=self.salvar).pack(side="left", padx=2)
-        tk.Button(botoes, text="Reabastecer", command=self.reabastecer).pack(side="left", padx=2)
-        tk.Button(botoes, text="Remover", command=self.remover).pack(side="left", padx=2)
-        tk.Button(botoes, text="Limpar", command=self.limpar).pack(side="left", padx=2)
-        tk.Button(botoes, text="Voltar", command=self.app.voltar_menu).pack(side="left", padx=2)
+        botoes.pack(fill="x", padx=5, pady=(6, 10))
+        grupo_esq = tk.Frame(botoes)
+        grupo_esq.pack(side="left")
+        grupo_dir = tk.Frame(botoes)
+        grupo_dir.pack(side="right")
+        tk.Button(grupo_esq, text="Adicionar", name="principal", command=self.adicionar).pack(side="left", padx=(0, 6))
+        tk.Button(grupo_esq, text="Salvar", name="secundario", command=self.salvar).pack(side="left", padx=(0, 6))
+        tk.Button(grupo_esq, text="Reabastecer", name="secundario2", command=self.reabastecer).pack(side="left")
+        tk.Button(grupo_dir, text="Limpar", name="secundario", command=self.limpar).pack(side="left", padx=(0, 6))
+        tk.Button(grupo_dir, text="Remover", name="perigo", command=self.remover).pack(side="left")
 
         self.tabela = Tabela(self, [
             ("id", "ID", 40),

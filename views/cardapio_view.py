@@ -35,7 +35,7 @@ class Cardapio(tk.Frame):
             item.preco * item.quantidade for item in self.controller.carrinho
         )
         self.label_carrinho.config(
-            text=f"Carrinho: {total_itens} item(ns)  |  Total: R$ {total_preco:.2f}"
+            text=f"🛒  Carrinho: {total_itens} item(ns)  |  Total: R$ {total_preco:.2f}"
         )
 
     def adicionar_ao_pedido(self):
@@ -67,36 +67,42 @@ class Cardapio(tk.Frame):
         )
 
     def create_widgets(self):
-        tk.Label(self, text="Cardápio", font=("Segoe UI", 16, "bold")).pack(pady=5)
-        tk.Label(
-            self,
-            text="Selecione um item e use + / - para ajustar a quantidade.",
-        ).pack(pady=2)
-        self.label_carrinho = tk.Label(self, text="Carrinho: 0 item(ns)  |  Total: R$ 0.00")
-        self.label_carrinho.pack(pady=4)
-
+        topo = tk.Frame(self)
+        topo.pack(fill="x")
+        tk.Button(topo, text="← Voltar", name="secundario", command=self.app.voltar_menu).pack(side="left")
+        titulos = tk.Frame(topo)
+        titulos.pack(side="left", padx=16)
+        tk.Label(titulos, text="Cardápio", font=("Segoe UI", 17, "bold"), fg="#263238").pack(anchor="w")
+        tk.Label(titulos, text="Selecione um item e use + / − para ajustar a quantidade.", fg="#607d8b").pack(anchor="w")
+        tk.Frame(self, height=1, bg="#cfd8dc").pack(fill="x", pady=(12, 12))
+        self.label_carrinho = tk.Label(
+            self, text="🛒  Carrinho: 0 item(ns)  |  Total: R$ 0.00",
+            anchor="w", font=("Segoe UI", 11, "bold"), fg="#1f4a3a", bg="#dff3e6",
+            padx=14, pady=8,
+        )
+        self.label_carrinho.pack(fill="x", padx=5, pady=(0, 8))
 
         rodape = tk.Frame(self)
         rodape.pack(side="bottom", fill="x")
 
         if self.cliente is None:
-            tk.Label(rodape, text="Número da mesa:").pack(pady=2)
-            self.entry_mesa = tk.Entry(rodape)
-            self.entry_mesa.pack(pady=2)
+            linha_mesa = tk.Frame(rodape)
+            linha_mesa.pack(fill="x", padx=5, pady=(8, 0))
+            tk.Label(linha_mesa, text="Número da mesa:").pack(side="left")
+            self.entry_mesa = tk.Entry(linha_mesa, width=8)
+            self.entry_mesa.pack(side="left", padx=8, ipady=3)
 
-        self.label_erro = tk.Label(rodape, text="", fg="red")
-        self.label_erro.pack(pady=2)
+        self.label_erro = tk.Label(rodape, text="", fg="red", anchor="w")
+        self.label_erro.pack(fill="x", padx=5, pady=(6, 0))
 
-        botoes_item = tk.Frame(rodape)
-        botoes_item.pack(pady=5)
-        tk.Button(botoes_item, text="+", width=4, command=self.adicionar_ao_pedido).pack(side="left", padx=2)
-        tk.Button(botoes_item, text="-", width=4, command=self.remover_do_pedido).pack(side="left", padx=2)
-        tk.Button(botoes_item, text="Info", command=self.abrir_detalhes).pack(side="left", padx=2)
-
-        botoes = tk.Frame(rodape)
-        botoes.pack(pady=5)
-        tk.Button(botoes, text="Fazer Pedido", command=self.fazer_pedido).pack(side="left", padx=5)
-        tk.Button(botoes, text="Voltar", command=self.app.voltar_menu).pack(side="left", padx=5)
+        acoes = tk.Frame(rodape)
+        acoes.pack(fill="x", padx=5, pady=(2, 8))
+        botoes_item = tk.Frame(acoes)
+        botoes_item.pack(side="left")
+        tk.Button(botoes_item, text="+", width=3, font=("Segoe UI", 12, "bold"), command=self.adicionar_ao_pedido).pack(side="left", padx=(0, 6))
+        tk.Button(botoes_item, text="−", width=3, font=("Segoe UI", 12, "bold"), command=self.remover_do_pedido).pack(side="left", padx=(0, 6))
+        tk.Button(botoes_item, text="Info", name="secundario", command=self.abrir_detalhes).pack(side="left")
+        tk.Button(acoes, text="Fazer Pedido  ✔", name="principal", command=self.fazer_pedido).pack(side="right")
 
         self.tabela = Tabela(self, [
             ("id", "ID", 40),
@@ -146,14 +152,19 @@ class ItensDetail(tk.Frame):
         self.app.mostrar(Cardapio, cliente=self.cliente, controller=self.controller)
 
     def create_widgets(self):
-        tk.Label(
-            self, text=f"Detalhes: {self.item_pedido.nome}", font=("Segoe UI", 16, "bold")
-        ).pack(pady=5)
-        tk.Label(self, text=f"Preço: R${self.item_pedido.preco:.2f}").pack(pady=2)
+        topo = tk.Frame(self)
+        topo.pack(fill="x")
+        tk.Button(topo, text="← Voltar", name="secundario", command=self.voltar).pack(side="left")
+        titulos = tk.Frame(topo)
+        titulos.pack(side="left", padx=16)
+        tk.Label(titulos, text=f"Detalhes: {self.item_pedido.nome}", font=("Segoe UI", 17, "bold"), fg="#263238").pack(anchor="w")
+        tk.Frame(self, height=1, bg="#cfd8dc").pack(fill="x", pady=(12, 12))
+        tk.Label(self, text=f"Preço: R${self.item_pedido.preco:.2f}", anchor="w", font=("Segoe UI", 10, "bold")).pack(fill="x", padx=8)
         tk.Label(
             self,
             text="Marque os ingredientes e ajuste a quantidade de cada um.",
-        ).pack(pady=2)
+            anchor="w",
+        ).pack(fill="x", padx=8)
 
         barra_selecao = tk.Frame(self)
         barra_selecao.pack(fill="x", padx=8, pady=4)
@@ -162,29 +173,30 @@ class ItensDetail(tk.Frame):
         tk.Button(
             barra_selecao,
             text="Limpar seleção",
+            name="secundario",
             command=lambda: self._definir_selecao(False),
         ).pack(side="right", padx=2)
         tk.Button(
             barra_selecao,
             text="Marcar todos",
+            name="secundario2",
             command=lambda: self._definir_selecao(True),
         ).pack(side="right", padx=2)
 
         rodape = tk.Frame(self)
         rodape.pack(side="bottom", fill="x")
 
-        tk.Label(rodape, text="Observação:").pack(pady=2)
+        tk.Label(rodape, text="Observação:", anchor="w").pack(fill="x", padx=8, pady=(8, 0))
         self.entry_observacao = tk.Entry(rodape)
         self.entry_observacao.insert(0, self.item_pedido.observacao or "")
-        self.entry_observacao.pack(pady=2)
+        self.entry_observacao.pack(fill="x", padx=8, pady=(2, 0), ipady=3)
 
-        self.label_erro = tk.Label(rodape, text="", fg="red")
-        self.label_erro.pack(pady=2)
+        self.label_erro = tk.Label(rodape, text="", fg="red", anchor="w")
+        self.label_erro.pack(fill="x", padx=8, pady=(6, 0))
 
         botoes = tk.Frame(rodape)
-        botoes.pack(pady=10)
-        tk.Button(botoes, text="Salvar", command=self.salvar).pack(side="left", padx=5)
-        tk.Button(botoes, text="Voltar", command=self.voltar).pack(side="left", padx=5)
+        botoes.pack(anchor="e", padx=8, pady=10)
+        tk.Button(botoes, text="Salvar", name="principal", command=self.salvar).pack(side="left")
 
         frame_lista = tk.Frame(self)
         frame_lista.pack(fill="both", expand=True, padx=5)

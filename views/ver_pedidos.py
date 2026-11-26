@@ -2,6 +2,22 @@ import tkinter as tk
 from controler.pedidos_view_controller import PedidosViewController
 from views.tabela import Tabela
 
+CORES_ESTADO = {
+    "recebido": "#e3f2fd",
+    "na_fila": "#fff4d6",
+    "em_preparo": "#ffe5cc",
+    "pronto": "#dcf1e3",
+}
+
+
+def tag_estado(estado):
+    return str(estado).lower().replace(" ", "_")
+
+
+def configurar_tags_estado(tree):
+    for tag, cor in CORES_ESTADO.items():
+        tree.tag_configure(tag, background=cor)
+
 
 class Pedidos(tk.Frame):
     def __init__(self, parent, app):
@@ -12,20 +28,26 @@ class Pedidos(tk.Frame):
         self.create_widgets()
 
     def create_widgets(self):
-        tk.Label(self, text="Pedidos realizados:").pack(pady=5)
+        topo = tk.Frame(self)
+        topo.pack(fill="x")
+        tk.Button(topo, text="← Voltar", name="secundario", command=self.app.voltar_menu).pack(side="left")
+        titulos = tk.Frame(topo)
+        titulos.pack(side="left", padx=16)
+        tk.Label(titulos, text="Pedidos realizados", font=("Segoe UI", 17, "bold"), fg="#263238").pack(anchor="w")
+        tk.Label(titulos, text="Selecione um pedido para avançar o estado ou ver os detalhes.", fg="#607d8b").pack(anchor="w")
+        tk.Frame(self, height=1, bg="#cfd8dc").pack(fill="x", pady=(12, 12))
 
         # rodapé empacotado antes da tabela para nunca sumir da tela
         rodape = tk.Frame(self)
         rodape.pack(side="bottom", fill="x")
 
-        self.label_erro = tk.Label(rodape, text="", fg="red")
-        self.label_erro.pack(pady=2)
+        self.label_erro = tk.Label(rodape, text="", fg="red", anchor="w")
+        self.label_erro.pack(fill="x", padx=5, pady=(6, 0))
 
         botoes = tk.Frame(rodape)
-        botoes.pack(pady=10)
-        tk.Button(botoes, text="Avançar", command=self.avancar_pedido).pack(side="left", padx=5)
-        tk.Button(botoes, text="Detalhes", command=self.abrir_detalhes).pack(side="left", padx=5)
-        tk.Button(botoes, text="Voltar", command=self.app.voltar_menu).pack(side="left", padx=5)
+        botoes.pack(anchor="e", padx=5, pady=10)
+        tk.Button(botoes, text="Detalhes", name="secundario", command=self.abrir_detalhes).pack(side="left", padx=(0, 8))
+        tk.Button(botoes, text="Avançar estado  ▶", name="principal", command=self.avancar_pedido).pack(side="left")
 
         self.tabela = Tabela(self, [
             ("id", "Pedido", 70),
@@ -34,6 +56,7 @@ class Pedidos(tk.Frame):
             ("estado", "Estado", 150),
         ])
         self.tabela.pack(fill="both", expand=True, padx=5)
+        configurar_tags_estado(self.tabela.tree)
 
         for pedido in self.controller.listar_nao_finalizados():
             iid = str(pedido.id)
@@ -46,7 +69,8 @@ class Pedidos(tk.Frame):
                     self.controller.origem(pedido),
                     f"R${total:.2f}",
                     str(pedido.estado),
-                )
+                ),
+                tags=(tag_estado(pedido.estado),),
             )
 
     def _pedido_selecionado(self):
@@ -66,6 +90,7 @@ class Pedidos(tk.Frame):
             self.label_erro.config(text=erro)
             return
         self.tabela.tree.set(iid, "estado", str(pedido.estado))
+        self.tabela.tree.item(iid, tags=(tag_estado(pedido.estado),))
 
     def abrir_detalhes(self):
         _, pedido = self._pedido_selecionado()
@@ -83,23 +108,33 @@ class DetalhesPedido(tk.Frame):
         self.create_widgets()
 
     def create_widgets(self):
-        tk.Label(self, text=f"Pedido #{self.pedido.id}").pack(pady=5)
-        tk.Label(self, text=f"Mesa / Cliente: {self.controller.origem(self.pedido)}").pack(pady=2)
-        tk.Label(self, text=f"Estado: {self.pedido.estado}").pack(pady=5)
+        topo = tk.Frame(self)
+        topo.pack(fill="x")
+        tk.Button(topo, text="← Voltar", name="secundario", command=lambda: self.app.mostrar(Pedidos)).pack(side="left")
+        titulos = tk.Frame(topo)
+        titulos.pack(side="left", padx=16)
+        tk.Label(titulos, text=f"Pedido #{self.pedido.id}", font=("Segoe UI", 17, "bold"), fg="#263238").pack(anchor="w")
+        tk.Frame(self, height=1, bg="#cfd8dc").pack(fill="x", pady=(12, 12))
+        info = tk.Frame(self)
+        info.pack(fill="x", padx=5, pady=(0, 12))
+        for coluna, (rotulo, valor) in enumerate([
+            ("MESA / CLIENTE", self.controller.origem(self.pedido)),
+            ("ESTADO", str(self.pedido.estado)),
+        ]):
+            caixa = tk.Frame(info, highlightbackground="#cfd8dc", highlightthickness=1, padx=18, pady=10)
+            caixa.grid(row=0, column=coluna, sticky="w", padx=(0, 12))
+            tk.Label(caixa, text=rotulo, font=("Segoe UI", 8, "bold"), fg="#607d8b").pack(anchor="w")
+            tk.Label(caixa, text=valor, font=("Segoe UI", 14, "bold")).pack(anchor="w")
 
         rodape = tk.Frame(self)
         rodape.pack(side="bottom", fill="x")
 
         botoes = tk.Frame(rodape)
-        botoes.pack(pady=10)
+        botoes.pack(anchor="e", padx=5, pady=10)
         tk.Button(
-            botoes, text="Ingredientes/Obs",
+            botoes, text="Ingredientes / Obs", name="principal",
             command=lambda: self.app.mostrar(IngredientesPedido, pedido=self.pedido)
-        ).pack(side="left", padx=5)
-        tk.Button(
-            botoes, text="Voltar",
-            command=lambda: self.app.mostrar(Pedidos)
-        ).pack(side="left", padx=5)
+        ).pack(side="left")
 
         self.tabela = Tabela(self, [
             ("qtd", "Qtd", 50),
@@ -123,11 +158,14 @@ class MeuPedido(tk.Frame):
         self.create_widgets()
 
     def create_widgets(self):
-        tk.Label(self, text="Meus pedidos:").pack(pady=5)
-
-        rodape = tk.Frame(self)
-        rodape.pack(side="bottom", fill="x")
-        tk.Button(rodape, text="Voltar", command=self.app.voltar_menu).pack(pady=10)
+        topo = tk.Frame(self)
+        topo.pack(fill="x")
+        tk.Button(topo, text="← Voltar", name="secundario", command=self.app.voltar_menu).pack(side="left")
+        titulos = tk.Frame(topo)
+        titulos.pack(side="left", padx=16)
+        tk.Label(titulos, text="Meus pedidos", font=("Segoe UI", 17, "bold"), fg="#263238").pack(anchor="w")
+        tk.Label(titulos, text="Acompanhe o andamento dos seus pedidos.", fg="#607d8b").pack(anchor="w")
+        tk.Frame(self, height=1, bg="#cfd8dc").pack(fill="x", pady=(12, 12))
 
         self.tabela = Tabela(self, [
             ("pedido", "Pedido", 70),
@@ -136,13 +174,15 @@ class MeuPedido(tk.Frame):
             ("item", "Item", 180),
         ])
         self.tabela.pack(fill="both", expand=True, padx=5)
+        configurar_tags_estado(self.tabela.tree)
 
         # uma linha por item; o número e o estado do pedido se repetem
         for pedido in self.controller.listar_por_cliente(self.cliente):
             for item in pedido.itens_pedidos:
                 self.tabela.tree.insert(
                     "", "end",
-                    values=(f"#{pedido.id}", str(pedido.estado), item.quantidade, item.nome)
+                    values=(f"#{pedido.id}", str(pedido.estado), item.quantidade, item.nome),
+                    tags=(tag_estado(pedido.estado),),
                 )
 class IngredientesPedido(tk.Frame):
     def __init__(self, parent, app, pedido):
@@ -154,14 +194,13 @@ class IngredientesPedido(tk.Frame):
         self.create_widgets()
 
     def create_widgets(self):
-        tk.Label(self, text=f"Ingredientes e observações - Pedido #{self.pedido.id}").pack(pady=5)
-
-        rodape = tk.Frame(self)
-        rodape.pack(side="bottom", fill="x")
-        tk.Button(
-            rodape, text="Voltar",
-            command=lambda: self.app.mostrar(DetalhesPedido, pedido=self.pedido)
-        ).pack(pady=10)
+        topo = tk.Frame(self)
+        topo.pack(fill="x")
+        tk.Button(topo, text="← Voltar", name="secundario", command=lambda: self.app.mostrar(DetalhesPedido, pedido=self.pedido)).pack(side="left")
+        titulos = tk.Frame(topo)
+        titulos.pack(side="left", padx=16)
+        tk.Label(titulos, text=f"Ingredientes e observações - Pedido #{self.pedido.id}", font=("Segoe UI", 17, "bold"), fg="#263238").pack(anchor="w")
+        tk.Frame(self, height=1, bg="#cfd8dc").pack(fill="x", pady=(12, 12))
 
         frame_lista = tk.Frame(self)
         frame_lista.pack(fill="both", expand=True, padx=5)
@@ -187,7 +226,7 @@ class IngredientesPedido(tk.Frame):
 
         for item in self.pedido.itens_pedidos:
             ingredientes, observacao = self.controller.ingredientes_e_observacao(item)
-            cartao = tk.Frame(lista, relief="groove", borderwidth=1, padx=8, pady=6)
+            cartao = tk.Frame(lista, highlightbackground="#cfd8dc", highlightthickness=1, padx=10, pady=8)
             cartao.pack(fill="x", padx=4, pady=4)
             tk.Label(
                 cartao,
